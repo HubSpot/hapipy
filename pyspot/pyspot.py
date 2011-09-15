@@ -133,9 +133,11 @@ class HubSpotLeadsClient(HubSpotClient):
   def get_lead(self, lead_guid):
     return self._make_request('list/', {'guids[0]': lead_guid})
   
-  def search_leads(self, term, params):
-    params['search'] = term
+  def list_leads(self, params):
     return self._make_request('list/', params)
+
+  def search_leads(self, term, params):
+    return self.list_leads(params.update({'search': term}) or params)
     
   def update_lead(self, lead_guid, data):
     return self._make_request(

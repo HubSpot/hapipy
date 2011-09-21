@@ -24,8 +24,10 @@ import base64
 import urllib
 import httplib
 import logging
+import time
 from xml.dom import minidom
 from blog_objects import *
+from lead_objects import *
 
 try:
   import hashlib
@@ -57,7 +59,7 @@ except:
 
 HUBSPOT_BLOG_API_VERSION = '1'
 HUBSPOT_LEADS_API_VERSION = '1'
-
+HUBSPOT_API_BASE = "hubapi.com"  #comment this out?
 
 class HubSpotClient(object):
   '''Client for interacting with the HubSpot APIs'''
@@ -99,8 +101,9 @@ class HubSpotClient(object):
     
     client = httplib.HTTPSConnection(HUBSPOT_API_BASE)
     if data and not isinstance(data, str):
-      data = urllib.urlencode(data)
-    
+      if request_method != 'PUT':  #and method doesn't contain 'blog'...this will hose update lead !!!!
+        data = urllib.urlencode(data)
+      
     headers = {'Content-Type': content_type}
     
     client.request(request_method, url, data, headers)
@@ -129,37 +132,45 @@ class HubSpotLeadsClient(HubSpotClient):
   
   def create_lead(self, ip_address, cookie, fields):
     pass
-    
+  
   def get_lead(self, lead_guid):
-    return self._make_request('list/', {'guids[0]': lead_guid})
+    response = self._make_request('list/', {'guids[0]': lead_guid}, 'application/json')
+    indv_lead = Lead(response['body'][0])
+    return indv_lead
   
-  def search_leads(self, term, params):
-    params['search'] = term
-    return self._make_request('list/', params)
-    
-  def update_lead(self, lead_guid, data):
-    return self._make_request(
-      'lead/%s/' % lead_guid, {},
-      data=data, request_method='PUT'
-    )
+  def search_leads(self, search_value):
+    response = self._make_request('list/', {'search': search_value}, 'application/json')
+    lead_objs = []
+    for indv_leads in response['body']:
+      indv_lead_obj = Lead(indv_leads)
+      lead_objs.append(indv_lead_obj)
+    return lead_objs
   
-  def get_callback_urls(self):
-    return self._make_request(
-      'callback-url', {}
-    )
-    
-  def register_callback_url(self, url):
-    return self._make_request(
-      'callback-url', {'url': url}, data={'url': url}, request_method='POST'
-    )
-    
-  def close_lead(self, lead_guid):
-    now = int(time.time()*1000)
-    data = {'closedAt': now}
-    return self._make_request(
-      'lead/%s/' % lead_guid, data, request_method='PUT'
-    )
-    
+  def update_lead(self, lead_guid, update_data={}):
+    response = self._make_request('lead/%s/' % lead_guid, {}, 'application/json', str(update_data), request_method='PUT')
+    if response['status'] == 200:
+      lead_response = self._make_request('list/', {'guids[0]': lead_guid}, 'application/json')
+      indv_lead = Lead(lead_response['body'][0])
+      return indv_lead
+  
+  def get_webhook(self):  #WTF are these 2 methods for?
+    return self._make_request('callback-url', {})
+  
+  def register_webhook(self, url):
+    return self._make_request('callback-url', {'url': url}, data={'url': url}, request_method='POST')
+  
+  def close_lead(self, lead_guid, close_time=None):
+    if close_time == None:
+      now = int(time.time()*1000)
+      data = '{\'guid\':\'%s\', \'closedAt\': \'%s\'}' % (lead_guid, now)
+    else:
+      data = '{\'guid\':\'%s\', \'closedAt\': \'%s\'}' % (lead_guid, close_time)
+    response = self._make_request('lead/%s/' % lead_guid, {}, 'application/json', str(data), request_method='PUT')
+    if response['status'] == 200:
+      lead_response = self._make_request('list/', {'guids[0]': lead_guid}, 'application/json')
+      indv_lead = Lead(lead_response['body'][0])
+      return indv_lead
+  
 
 class HubSpotLeadNurtureClient(HubSpotClient):
   

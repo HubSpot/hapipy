@@ -156,10 +156,9 @@ class HubSpotLeadsClient(HubSpotClient):
   
   def get_webhook(self):  #WTF are these 2 methods for?
     return self._make_request('callback-url', {}, 'application/json')
-    #Create Webhooks object, enable getting webhook guid and url
   
   def register_webhook(self, url):
-    return self._make_request('callback-url', {'url': url}, data={'url': url}, request_method='POST')
+    return self._make_request('callback-url', {'url': url}, 'application/json', data={'url': url}, request_method='POST')
   
   def close_lead(self, lead_guid, close_time=None):
     if close_time == None:
@@ -253,10 +252,10 @@ class HubSpotEventClient(HubSpotClient):
 
 
 class HubSpotSettingsClient(HubSpotClient):
-  
+    
   def _create_path(self, method):
     return 'settings/v%s/%s' % (HUBSPOT_LEADS_API_VERSION, method)
-    
+  
   def _get_msg(self, code):
     messages = {
       200: 'successfully retrieved settings',
@@ -266,17 +265,14 @@ class HubSpotSettingsClient(HubSpotClient):
       500: 'internal server error'
     }
     return messages[code]
-    
+  
   def get_settings(self):
-    return self._make_request(
-      'settings', {}
-    )    
-    
+    return self._make_request('settings', {}, 'application/json')    
+  
   def update_settings(self, data):
-    return self._make_request(
-      'settings', {}, request_method='POST', data=data
-    )
-    
+    return self._make_request('settings', {}, 'application/json', data=data, request_method='POST')
+  
+
 class HubSpotBlogClient(HubSpotClient):
   
   def _create_path(self, method):

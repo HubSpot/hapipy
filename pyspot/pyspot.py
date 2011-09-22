@@ -28,6 +28,7 @@ import time
 from xml.dom import minidom
 from blog_objects import *
 from lead_objects import *
+from lead_nurturing_objects import *
 
 try:
   import hashlib
@@ -154,7 +155,8 @@ class HubSpotLeadsClient(HubSpotClient):
       return indv_lead
   
   def get_webhook(self):  #WTF are these 2 methods for?
-    return self._make_request('callback-url', {})
+    return self._make_request('callback-url', {}, 'application/json')
+    #Create Webhooks object, enable getting webhook guid and url
   
   def register_webhook(self, url):
     return self._make_request('callback-url', {'url': url}, data={'url': url}, request_method='POST')
@@ -176,32 +178,37 @@ class HubSpotLeadNurtureClient(HubSpotClient):
   
   def _create_path(self, method):
     return 'nurture/v%s/%s' % (HUBSPOT_LEADS_API_VERSION, method)
-    
+  
   def get_campaigns(self):
-    return self._make_request(
-      'campaigns', {}
-    )
-    
+    response = self._make_request('campaigns', {}, 'application/json')
+    ln_campaigns = []
+    for lnc in response['body']:
+      lnc_obj = LeadNurturingCampaign(lnc)
+      ln_campaigns.append(lnc_obj)
+    return ln_campaigns
+  
   def get_leads(self, campaign_guid):
-    return self._make_request(
-      'campaign/%s/list' % campaign_guid, {}
-    )
+    response = self._make_request('campaign/%s/list' % campaign_guid, {}, 'application/json')
+    leads_in_campaign = []
+    for leads in response['body']:
+      leads_in_ln = CampaignLeads(leads)
+      leads_in_campaign.append(leads_in_ln)
+    return leads_in_campaign
   
   def get_history(self, lead_guid):
-    return self._make_request(
-      'lead/%s' % lead_guid, {}
-    )
-    
+    response = self._make_request('lead/%s' % lead_guid, {}, 'application/json')
+    leads_in_campaigns = []
+    for leads in response['body']:
+      leads_in_ln = CampaignLeads(leads)
+      leads_in_campaigns.append(leads_in_ln)
+    return leads_in_campaigns
+  
   def enroll_lead(self, campaign_guid):
-    return self._make_request(
-      'campaign/%s/add' % campaign_guid, {}
-    )
-    
+    return self._make_request('campaign/%s/add' % campaign_guid, {}, 'application/json')
+  
   def unenroll_lead(self, campaign_guid):
-    return self._make_request(
-      'campaign/%s/remove' % campaign_guid, {}
-    )
-
+    return self._make_request('campaign/%s/remove' % campaign_guid, {}, 'application/json')
+  
 
 class HubSpotEventClient(HubSpotClient):
   

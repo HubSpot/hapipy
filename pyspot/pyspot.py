@@ -203,11 +203,21 @@ class HubSpotLeadNurtureClient(HubSpotClient):
       leads_in_campaigns.append(leads_in_ln)
     return leads_in_campaigns
   
-  def enroll_lead(self, campaign_guid):
-    return self._make_request('campaign/%s/add' % campaign_guid, {}, 'application/json')
+  def enroll_lead(self, campaign_guid, lead_guid):
+    response = self._make_request('campaign/%s/add' % campaign_guid, {}, 'application/json', str(lead_guid), request_method='POST')
+    if response['status'] == 200:
+      message = "lead enrolled"
+    else:
+      message = "failed to enroll lead"
+    return message
   
-  def unenroll_lead(self, campaign_guid):
-    return self._make_request('campaign/%s/remove' % campaign_guid, {}, 'application/json')
+  def unenroll_lead(self, campaign_guid, lead_guid):
+    response = self._make_request('campaign/%s/remove' % campaign_guid, {}, 'application/json', str(lead_guid), request_method='POST')
+    if response['status'] == 200:
+      message = "lead unenrolled"
+    else:
+      message = "failed to unenroll lead"
+    return message
   
 
 class HubSpotEventClient(HubSpotClient):

@@ -17,6 +17,7 @@
 __author__ = "markitecht (Christopher O'Donnell)"
 __author__ = "Adrian Mott"
 __author__ = "Matt Furtado"
+__author__ = "prior (Michael Prior)"
 
 import re
 import hmac
@@ -52,15 +53,11 @@ except (ImportError, AttributeError):
                 simplejson.loads
             except:
                 pass
-try:
-    from hubspot.settings import settings as hs_settings
-    HUBSPOT_API_BASE = hs_settings.HUBSPOT_API_BASE
-except:
-    HUBSPOT_API_BASE = "hubapi.com"
 
 HUBSPOT_BLOG_API_VERSION = '1'
 HUBSPOT_LEADS_API_VERSION = '1'
-HUBSPOT_API_BASE = "hubapi.com"  #comment this out?
+HUBSPOT_API_BASE = "hubapi.com"
+HUBSPOTQA_API_BASE = "hubapiqa.com"
 
 class HubSpotClient(object):
     '''Client for interacting with the HubSpot APIs'''
@@ -71,6 +68,7 @@ class HubSpotClient(object):
             # only expect to be doing this for global api keys that need to specify the hub/portal id they are working on
             # this parameter does not need to be inlcuded otherwise
             self.hub_id = kwargs.get('hub_id') or kwargs.get('portal_id')
+            self.environment = kwargs.get('environment')
   
     def _create_path(self, method):
         pass
@@ -98,12 +96,16 @@ class HubSpotClient(object):
     def _make_request(self, method, params, content_type, data=None, request_method='GET', url=None):
         params['hapikey'] = self.api_key
         
-        if self.hub_id:
+        if getattr(self,'hub_id'):
             params['portalId'] = self.hub_id
         
         if not url: url = '/%s?%s' % (self._create_path(method), urllib.urlencode(params))
+
+        domain = HUBSPOT_API_BASE
+        if getattr(self,'environment','production').lower() == 'qa':
+            domain = HUBSPOTQA_API_BASE
         
-        client = httplib.HTTPSConnection(HUBSPOT_API_BASE)
+        client = httplib.HTTPSConnection(domain)
         if data and not isinstance(data, str):
             if request_method != 'PUT':  #and method doesn't contain 'blog'...this will hose update lead !!!!
                 data = urllib.urlencode(data)

@@ -65,9 +65,12 @@ HUBSPOT_API_BASE = "hubapi.com"  #comment this out?
 class HubSpotClient(object):
     '''Client for interacting with the HubSpot APIs'''
     
-    def __init__(self, api_key):
+    def __init__(self, api_key, **kwargs):
         self.api_key = api_key
-        self.portal_id = None
+        if len(kwargs): 
+            # only expect to be doing this for global api keys that need to specify the hub/portal id they are working on
+            # this parameter does not need to be inlcuded otherwise
+            self.hub_id = kwargs.get('hub_id') or kwargs.get('portal_id')
   
     def _create_path(self, method):
         pass
@@ -95,8 +98,8 @@ class HubSpotClient(object):
     def _make_request(self, method, params, content_type, data=None, request_method='GET', url=None):
         params['hapikey'] = self.api_key
         
-        if self.portal_id:
-            params['portalId'] = self.portal_id
+        if self.hub_id:
+            params['portalId'] = self.hub_id
         
         if not url: url = '/%s?%s' % (self._create_path(method), urllib.urlencode(params))
         

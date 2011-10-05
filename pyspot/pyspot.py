@@ -15,7 +15,7 @@
 # limitations under the License.
 
 __author__ = "markitecht (Christopher O'Donnell)"
-__author__ = "Adrian Mott"
+__author__ = "adrianmott (Adrian Mott)"
 __author__ = "Matt Furtado"
 __author__ = "prior (Michael Prior)"
 
@@ -69,13 +69,13 @@ class HubSpotClient(object):
             # this parameter does not need to be inlcuded otherwise
             self.hub_id = kwargs.get('hub_id') or kwargs.get('portal_id')
             self.environment = kwargs.get('environment')
-  
+    
     def _create_path(self, method):
         pass
     
     def _http_error(self, code, message, url):
         logging.error('Client request error. Code: %s - Reason: %s - URL: %s' % (str(code), message, url))
-  
+    
     def _prepare_response(self, code, data):
         msg = self._get_msg(code)
         if data:
@@ -84,7 +84,7 @@ class HubSpotClient(object):
             except ValueError:  
                 pass
         return {'status': code, 'body': data or {}, 'msg': msg}
-  
+    
     def _get_msg(self, code):  # need to get a message here?
         return None
     
@@ -92,7 +92,7 @@ class HubSpotClient(object):
         if output == "atom" or output == "xml":
             return "atom+xml"
         return "json"
-  
+    
     def _make_request(self, method, params, content_type, data=None, request_method='GET', url=None, timeout=10):
         params['hapikey'] = self.api_key
         
@@ -100,7 +100,7 @@ class HubSpotClient(object):
             params['portalId'] = self.hub_id
         
         if not url: url = '/%s?%s' % (self._create_path(method), urllib.urlencode(params))
-
+        
         domain = HUBSPOT_API_BASE
         if getattr(self,'environment','production').lower() == 'qa':
             domain = HUBSPOTQA_API_BASE
@@ -126,7 +126,8 @@ class HubSpotClient(object):
             client.close()
             self._http_error(result.status, result.reason, url)
             return self._prepare_response(result.status, {})
-  
+    
+
 class HubSpotLeadsClient(HubSpotClient):
     """
     The PySpot Leads client uses the _make_request method to call the API for data.  It returns only JSON in the standard format:
@@ -151,14 +152,22 @@ class HubSpotLeadsClient(HubSpotClient):
             indv_lead_obj = Lead(indv_leads)
             lead_objs.append(indv_lead_obj)
         return lead_objs
-  
+    
     def update_lead(self, lead_guid, update_data={}, timeout=10):
         response = self._make_request('lead/%s/' % lead_guid, {}, 'application/json', str(update_data), request_method='PUT', timeout=timeout)
         if response['status'] == 200:
             lead_response = self._make_request('list/', {'guids[0]': lead_guid}, 'application/json')
             indv_lead = Lead(lead_response['body'][0])
             return indv_lead
-  
+    
+    def offset_leads(self, offset):
+        response = self._make_request('list/', {'offset': offset}, 'application/json')
+        lead_objs = []
+        for indv_leads in response['body']:
+            indv_lead_obj = Lead(indv_leads)
+            lead_objs.append(indv_lead_obj)
+        return lead_objs
+    
     def get_webhook(self, timeout=10):  #WTF are these 2 methods for?
         return self._make_request('callback-url', {}, 'application/json', timeout=10)
     
@@ -176,7 +185,7 @@ class HubSpotLeadsClient(HubSpotClient):
             lead_response = self._make_request('list/', {'guids[0]': lead_guid}, 'application/json')
             indv_lead = Lead(lead_response['body'][0])
             return indv_lead
-  
+    
 
 class HubSpotLeadNurtureClient(HubSpotClient):
   
@@ -190,7 +199,7 @@ class HubSpotLeadNurtureClient(HubSpotClient):
             lnc_obj = LeadNurturingCampaign(lnc)
             ln_campaigns.append(lnc_obj)
         return ln_campaigns
-  
+    
     def get_leads(self, campaign_guid, timeout=10):
         response = self._make_request('campaign/%s/list' % campaign_guid, {}, 'application/json', timeout=timeout)
         leads_in_campaign = []
@@ -206,7 +215,7 @@ class HubSpotLeadNurtureClient(HubSpotClient):
             leads_in_ln = CampaignLeads(leads)
             leads_in_campaigns.append(leads_in_ln)
         return leads_in_campaigns
-  
+    
     def enroll_lead(self, campaign_guid, lead_guid, timeout=10):
         response = self._make_request('campaign/%s/add' % campaign_guid, {}, 'application/json', str(lead_guid), request_method='POST', timeout=timeout)
         if response['status'] == 200:
@@ -214,7 +223,7 @@ class HubSpotLeadNurtureClient(HubSpotClient):
         else:
             message = "failed to enroll lead"
         return message
-  
+    
     def unenroll_lead(self, campaign_guid, lead_guid, timeout=10):
         response = self._make_request('campaign/%s/remove' % campaign_guid, {}, 'application/json', str(lead_guid), request_method='POST',timeout=timeout)
         if response['status'] == 200:
@@ -222,13 +231,13 @@ class HubSpotLeadNurtureClient(HubSpotClient):
         else:
             message = "failed to unenroll lead"
         return message
-  
+    
 
 class HubSpotEventClient(HubSpotClient):
   
     def _create_path(self, method):
         return 'events/v%s/%s' % (HUBSPOT_LEADS_API_VERSION, method)
-        
+    
     def _get_msg(self, code):
         messages = {
             200: 'successfully retrieved events',
@@ -282,7 +291,7 @@ class HubSpotBlogClient(HubSpotClient):
   
     def _create_path(self, method):
         return 'blog/v%s/%s' % (HUBSPOT_BLOG_API_VERSION, method)
-
+    
     def _get_msg(self, code):
         messages = {
             200: 'successfully retrieved request',
@@ -292,7 +301,7 @@ class HubSpotBlogClient(HubSpotClient):
             500: 'internal server error'
         }
         return messages[code]
-  
+    
     def get_blogs(self, timeout=10):
         hs_response = self._make_request('list.json', {}, 'application/json', timeout=timeout)
         blog_objs = []
@@ -300,12 +309,12 @@ class HubSpotBlogClient(HubSpotClient):
             individual_blog_obj = Blog(blog_json)
             blog_objs.append(individual_blog_obj)
         return blog_objs
-  
+    
     def get_blog_info(self, blog_guid, timeout=10):
         hs_response = self._make_request(blog_guid, {}, 'application/json', timeout=timeout)
         individual_blog_obj = Blog(hs_response['body'])
         return individual_blog_obj
-  
+    
     def get_posts(self, blog_guid, timeout=10):
         hs_response = self._make_request('%s/posts.json' % blog_guid, {}, 'application/json', timeout=timeout)
         blog_post_objs = []
@@ -313,7 +322,7 @@ class HubSpotBlogClient(HubSpotClient):
             individual_blog_obj = BlogPosts(blog_posts)
             blog_post_objs.append(individual_blog_obj)
         return blog_post_objs
-  
+    
     def get_drafts(self, blog_guid, timeout=10):
         hs_response = self._make_request('%s/posts' % blog_guid, {'draft': 'true'}, 'application/json',timeout=timeout)
         blog_post_objs = []
@@ -321,7 +330,7 @@ class HubSpotBlogClient(HubSpotClient):
             individual_blog_obj = BlogPosts(blog_posts)
             blog_post_objs.append(individual_blog_obj)
         return blog_post_objs
-  
+    
     def get_published_posts(self, blog_guid, timeout=10):
         hs_response = self._make_request('%s/posts' % blog_guid, {'draft': 'false'}, 'application/json', timeout=timeout)
         blog_post_objs = []
@@ -329,7 +338,7 @@ class HubSpotBlogClient(HubSpotClient):
             individual_blog_obj = BlogPosts(blog_posts)
             blog_post_objs.append(individual_blog_obj)
         return blog_post_objs
-  
+    
     def get_blog_comments(self, blog_guid, timeout=10):
         hs_response = self._make_request('%s/comments.json' % blog_guid, {}, 'application/json', timeout=timeout)
         blog_comment_objs = []
@@ -337,7 +346,7 @@ class HubSpotBlogClient(HubSpotClient):
             individual_comment_obj = BlogComment(blog_comments)
             blog_comment_objs.append(individual_comment_obj)
         return blog_comment_objs
-  
+    
     def get_post(self, post_guid, timeout=10):
         hs_response = self._make_request('posts/%s.json' % post_guid, {}, 'application/json', timeout=timeout)
         individual_post_obj = BlogPosts(hs_response['body'])
@@ -350,7 +359,7 @@ class HubSpotBlogClient(HubSpotClient):
             individual_comment_obj = BlogComment(blog_comments)
             blog_comment_objs.append(individual_comment_obj)
         return blog_comment_objs
-      
+    
     def get_comment(self, comment_guid, timeout=10):
         hs_response = self._make_request('comments/%s.json' % comment_guid, {}, 'application/json', timeout=timeout)
         individual_comment_obj = BlogComment(hs_response['body'])
@@ -375,7 +384,7 @@ class HubSpotBlogClient(HubSpotClient):
         parsed_xml = minidom.parseString(hs_response['body'])
         inv_blog_post_obj = BlogPostCreate(parsed_xml)
         return inv_blog_post_obj
-  
+    
     def update_post(self, post_guid, title, summary, content, meta_desc, meta_keyword, tags, timeout=10):
         tag_xml = ''
         for tag in tags:
@@ -393,7 +402,7 @@ class HubSpotBlogClient(HubSpotClient):
         parsed_xml = minidom.parseString(hs_response['body'])
         inv_blog_post_obj = BlogPostCreate(parsed_xml)
         return inv_blog_post_obj
-  
+    
     def publish_post(self, post_guid, publish_time, is_draft, should_notify, timeout=10):
         post = '''<?xml version="1.0" encoding="utf-8"?>
                 <entry xmlns="http://www.w3.org/2005/Atom" xmlns:hs="http://www.hubspot.com/">
@@ -421,7 +430,7 @@ class HubSpotBlogClient(HubSpotClient):
         parsed_xml = minidom.parseString(hs_response['body'])
         inv_blog_post_obj = BlogCommentCreate(parsed_xml)
         return inv_blog_post_obj
-  
+    
 
 # UTILITIES
 def _hs_decode(s):

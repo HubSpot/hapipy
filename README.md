@@ -1,4 +1,4 @@
-pyspot
+hapipy
 ======
 
 A python wrapper around HubSpot's APIs.  Docs here:

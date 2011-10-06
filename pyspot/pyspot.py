@@ -234,9 +234,13 @@ class HubSpotLeadNurtureClient(HubSpotClient):
     def unenroll_lead(self, campaign_guid, lead_guid, timeout=10):
         response = self._make_request('campaign/%s/remove' % campaign_guid, {}, 'application/json', str(lead_guid), request_method='POST',timeout=timeout)
         if response['status'] == 200:
-            message = "lead unenrolled"
+            message = "200 OK - lead unenrolled"
+        elif response['status'] == 401:
+            message = "401 Unauthorized - bad API key"
+        elif response['status'] == 404:
+            message = "404 Not Found - wrong campaign or lead GUID"
         else:
-            message = "failed to unenroll lead"
+            message = "400 Bad Request"
         return message
     
 

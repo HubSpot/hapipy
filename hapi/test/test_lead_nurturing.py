@@ -1,6 +1,6 @@
 import unittest2
 import helper
-from pyspot import pyspot
+from hapi import hapi
 from pprint import pprint
 
 class LeadNurtureTest(unittest2.TestCase):
@@ -8,7 +8,7 @@ class LeadNurtureTest(unittest2.TestCase):
         creds = helper.get_creds()
         self.hapikey = creds.pop('hapikey')
         self.leftovers = creds
-        self.controller = pyspot.HubSpotLeadNurtureClient(self.hapikey, **self.leftovers)
+        self.controller = hapi.HubSpotLeadNurtureClient(self.hapikey, **self.leftovers)
     
     def tearDown(self):
         pass

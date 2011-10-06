@@ -5,7 +5,7 @@ import unittest
 import datetime
 import pdb
 
-from pyspot import *
+from hapi import *
 from django.utils import simplejson
 
 API_KEY = '686ec9d0-b3d0-11e0-ae57-123139078537'

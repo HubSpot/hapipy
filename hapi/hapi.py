@@ -111,7 +111,7 @@ class HubSpotClient(object):
         
         if not url: url = '/%s?%s' % (self._create_path(method), urllib.urlencode(params))
         
-        client = self._get_client()
+        client = self._get_client(timeout)
         
         if data and not isinstance(data, str):
             if request_method != 'PUT':  #and method doesn't contain 'blog'...this will hose update lead !!!!
@@ -134,7 +134,7 @@ class HubSpotClient(object):
             self._http_error(result.status, result.reason, url)
             return self._prepare_response(result.status, {})
     
-    def _get_client(self):
+    def _get_client(self, timeout):
         api_protocol = "https"
         url = self.api_base.split('://')
         if len(url) == 2:
@@ -144,9 +144,9 @@ class HubSpotClient(object):
             url = url[0]
         
         if api_protocol == "http":
-            return httplib.HTTPConnection(url)
+            return httplib.HTTPConnection(url, timeout=timeout)
         else:
-            return httplib.HTTPSConnection(url)
+            return httplib.HTTPSConnection(url, timeout=timeout)
     
 
 class HubSpotLeadsClient(HubSpotClient):

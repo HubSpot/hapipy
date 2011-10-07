@@ -18,6 +18,7 @@ __author__ = "markitecht (Christopher O'Donnell)"
 __author__ = "adrianmott (Adrian Mott)"
 __author__ = "Matt Furtado"
 __author__ = "prior (Michael Prior)"
+__author__ = "jessbrandi (Jessica Scott)"
 
 import re
 import hmac
@@ -64,11 +65,17 @@ class HubSpotClient(object):
     
     def __init__(self, api_key, **kwargs):
         self.api_key = api_key
+        self.api_base = HUBSPOT_API_BASE
+        
         if len(kwargs): 
             # only expect to be doing this for global api keys that need to specify the hub/portal id they are working on
             # this parameter does not need to be inlcuded otherwise
             self.hub_id = kwargs.get('hub_id') or kwargs.get('portal_id')
             self.environment = kwargs.get('environment')
+            if getattr(self,'environment','production').lower() == 'production':
+                self.api_base = HUBSPOTQA_API_BASE
+            # optionally pass in the api domain for testing/mocking purposes
+            self.api_base = kwargs.get('api_base', self.api_base)
     
     def _create_path(self, method):
         pass
@@ -104,11 +111,8 @@ class HubSpotClient(object):
         
         if not url: url = '/%s?%s' % (self._create_path(method), urllib.urlencode(params))
         
-        domain = HUBSPOT_API_BASE
-        if getattr(self,'environment','production').lower() == 'qa':
-            domain = HUBSPOTQA_API_BASE
+        client = self._get_client()
         
-        client = httplib.HTTPSConnection(domain, timeout=timeout)
         if data and not isinstance(data, str):
             if request_method != 'PUT':  #and method doesn't contain 'blog'...this will hose update lead !!!!
                 data = urllib.urlencode(data)
@@ -129,6 +133,20 @@ class HubSpotClient(object):
             client.close()
             self._http_error(result.status, result.reason, url)
             return self._prepare_response(result.status, {})
+    
+    def _get_client(self):
+        api_protocol = "https"
+        url = self.api_base.split('://')
+        if len(url) == 2:
+            api_protocol = url[0]
+            url = url[1]
+        else:
+            url = url[0]
+        
+        if api_protocol == "http":
+            return httplib.HTTPConnection(url)
+        else:
+            return httplib.HTTPSConnection(url)
     
 
 class HubSpotLeadsClient(HubSpotClient):

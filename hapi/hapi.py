@@ -72,7 +72,7 @@ class HubSpotClient(object):
             # this parameter does not need to be inlcuded otherwise
             self.hub_id = kwargs.get('hub_id') or kwargs.get('portal_id')
             self.environment = kwargs.get('environment')
-            if getattr(self,'environment','production').lower() != 'production':
+            if getattr(self,'environment','production').lower() not in ('production', 'prod'):
                 self.api_base = HUBSPOTQA_API_BASE
             # optionally pass in the api domain for testing/mocking purposes
             self.api_base = kwargs.get('api_base', self.api_base)

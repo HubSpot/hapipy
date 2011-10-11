@@ -63,16 +63,16 @@ class HubSpotClient(object):
     
     def __init__(self, api_key, timeout=10, **extra_options):
         self.api_key = api_key
-        self.options = {'timeout':timeout, 'base_url':'hubapi.com'}
+        self.options = {'timeout':timeout, 'api_base':'hubapi.com'}
         self.options.update(extra_options)
         self._prepare_connection_type()
 
     def _prepare_connection_type(self):
-        connection_types = {'http': httplib.HTTPConnection, 'https': httplib.HTTPSConnection}
-        parts = self.options['base'].split('://')
+        connection_types = {'http': httplib.HTTPConnection, 'https': httplib.HTTPConnection}
+        parts = self.options['api_base'].split('://')
         protocol = (parts[0:-1]+['https'])[0]
         self.options['connection_type'] = connection_types[protocol]
-        self.options['base_url'] = parts[-1]
+        self.options['api_base'] = parts[-1]
 
     def _create_path(self, subpath):
         raise Exception("Unimplemented _create_path for HubSpotClient subclass!")
@@ -90,9 +90,10 @@ class HubSpotClient(object):
         return None
     
     def _make_request(self, subpath, params=None, method='GET', data=None, **options):
-        options = self.options.copy.merge(options)
+        opts = self.options.copy()
+        opts.update(options)
 
-        conn = options['connection_type'](options['base_url'], options['timeout'])
+        conn = opts['connection_type'](opts['api_base'], timeout=opts['timeout'])
 
         ## what is this all about!?? -mp -- not getting it...
         if data and not isinstance(data, str):
@@ -101,10 +102,10 @@ class HubSpotClient(object):
 
         params = params or {}
         params['hapikey'] = self.api_key
-        if options.get('hub_id') or options.get('portal_id'):
-            params['portalId'] = options.get('hub_id') or options.get('portal_id')
-        url = options.get('url') or '/%s?%s' % (self._create_path(subpath), urllib.urlencode(params))
-        headers = {'Content-Type': options.get('content_type') or 'application/json'}
+        if opts.get('hub_id') or opts.get('portal_id'):
+            params['portalId'] = opts.get('hub_id') or opts.get('portal_id')
+        url = opts.get('url') or '/%s?%s' % (self._create_path(subpath), urllib.urlencode(params))
+        headers = {'Content-Type': opts.get('content_type') or 'application/json'}
         conn.request(method, url, data, headers)
         result = conn.getresponse()
         body = {}

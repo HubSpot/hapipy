@@ -25,7 +25,6 @@ import hmac
 import base64
 import urllib
 import httplib
-import logging
 import time
 from xml.dom import minidom
 from blog_objects import *
@@ -37,29 +36,34 @@ try:
 except ImportError:
     import md5 as hashlib
 
-try:
-    import json as simplejson
-    simplejson.loads
-except (ImportError, AttributeError):
-    try:
-        import simplejson
-        simplejson.loads
-    except (ImportError, AttributeError):
-        try:
-            from django.utils import simplejson
-            simplejson.loads
-        except (ImportError, AttributeError):
-            try:
-                import jsonlib as simplejson
-                simplejson.loads
-            except:
-                pass
+import simplejson as json
+
+
+#import logging
+#logger = logging.getLogger(__name__)
+
+
 
 HUBSPOT_BLOG_API_VERSION = '1'
 HUBSPOT_LEADS_API_VERSION = '1'
 
-class HubSpotClient(object):
-    '''Client for interacting with the HubSpot APIs'''
+#TODO: figure out how to get logging working right
+
+
+
+class HapiError(ValueError):
+    """Any problems get thrown as HapiError exceptions with the relevant info inside"""
+    def __init__(self, result):
+        super(HapiError,self).__init__()
+        self.result = result
+        self.reason = result.reason
+        self.status = result.status
+        self.msg = result.msg
+        self.body = result.body
+
+
+class BaseClient(object):
+    '''Base abstract object for interacting with the HubSpot APIs'''
     
     def __init__(self, api_key, timeout=10, **extra_options):
         self.api_key = api_key
@@ -75,13 +79,13 @@ class HubSpotClient(object):
         self.options['api_base'] = parts[-1]
 
     def _create_path(self, subpath):
-        raise Exception("Unimplemented _create_path for HubSpotClient subclass!")
+        raise Exception("Unimplemented _create_path for BaseController subclass!")
     
     def _prepare_response(self, code, data):
         msg = self._get_msg(code)
         if data:
             try:
-                data = simplejson.loads(data)
+                data = json.loads(data)
             except ValueError:  
                 pass
         return {'status': code, 'body': data or {}, 'msg': msg}
@@ -93,12 +97,7 @@ class HubSpotClient(object):
         opts = self.options.copy()
         opts.update(options)
 
-        conn = opts['connection_type'](opts['api_base'], timeout=opts['timeout'])
-
-        ## what is this all about!?? -mp -- not getting it...
-        if data and not isinstance(data, str):
-            if method != 'PUT':  #and method doesn't contain 'blog'...this will hose update lead !!!!
-                data = urllib.urlencode(data)
+        connection = opts['connection_type'](opts['api_base'], timeout=opts['timeout'])
 
         params = params or {}
         params['hapikey'] = self.api_key
@@ -106,53 +105,104 @@ class HubSpotClient(object):
             params['portalId'] = opts.get('hub_id') or opts.get('portal_id')
         url = opts.get('url') or '/%s?%s' % (self._create_path(subpath), urllib.urlencode(params))
         headers = {'Content-Type': opts.get('content_type') or 'application/json'}
-        conn.request(method, url, data, headers)
-        result = conn.getresponse()
-        body = {}
-        if result.status < 400:
-            body = result.read()
-        else:
-            logging.error('Client request error. Code: %s - Reason: %s - URL: %s' % (str(result.status), result.reason, url))
-        conn.close()
-        return self._prepare_response(result.status, body)
+        if not isinstance(data, str) and headers['Content-Type']=='application/json':
+            data = json.dumps(data)
+
+        #logger.debug("%s %s%s  %s %s", (method, opts['api_base'], url, data, headers))
+        connection.request(method, url, data, headers)
+        result = connection.getresponse()
+        result.body = result.read()
+        #logger.debug("%s %s\n---message---\n%s\n---body---\n%s\n---headers---\n%s\n",
+                #(result.status, result.reason, result.msg, result_read, result.getheaders()))
+
+        data = result.body
+        connection.close()
+        if result.status >= 400:
+            raise HapiException(result_read, result)
+        if data and isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except ValueError:  
+                pass
+        return data
     
 
-class HubSpotLeadsClient(HubSpotClient):
+def list_to_dict_with_python_case_keys(list_):
+    d = {}
+    for item in list_:
+        d[item] = item
+        if item.lower() != item:
+            python_variant = item[0].lower() + ''.join([c if c.lower()==c else '_%s'%c.lower() for c in item[1:]])
+            d[python_variant] = item
+
+class LeadsClient(BaseClient):
     """
-    The PySpot Leads client uses the _make_request method to call the API for data.  It returns only JSON in the standard format:
-    { status: 'status', body: 'data from API call', msg: 'message' }
-    PLEASE NOTE that the 'body' here is decoded JSON.
+    The hapipy Leads client uses the _make_request method to call the API for data.  It returns a python object translated from the json return
     """
+
+    _SORT_OPTIONS = [
+        'firstName',
+        'lastName',
+        'email',
+        'address',
+        'phone',
+        'insertedAt',
+        'firstConvertedAt',
+        'lastConvertedAt',
+        'lastModifiedAt',
+        'closedAt']
+    _SORT_OPTIONS_DICT = list_to_dict_with_python_case_keys(_SORT_OPTIONS)
+    _TIME_PIVOT_OPTIONS = [
+        'insertedAt',
+        'firstConvertedAt',
+        'lastConvertedAt',
+        'lastModifiedAt',
+        'closedAt']
+    _TIME_PIVOT_OPTIONS_DICT = list_to_dict_with_python_case_keys(_TIME_PIVOT_OPTIONS)
+    _SEARCH_OPTIONS = [
+        'search',
+        'sort', 
+        'dir',
+        'max',
+        'offset',
+        'startTime',
+        'stopTime',
+        'timePivot',
+        'excludeConversionEvents',
+        'optout',
+        'eligibleForEmail',
+        'bounced',
+        'isNotImported']
+    _SEARCH_OPTIONS_DICT = list_to_dict_with_python_case_keys(_SEARCH_OPTIONS)
+    _BOOLEAN_SEARCH_OPTIONS = [
+        'excludeConversionEvents',
+        'optout',
+        'eligibleForEmail',
+        'bounced',
+        'isNotImported']
+
+
     def _create_path(self, subpath):
-        return 'leads/v%s/%s' % (HUBSPOT_LEADS_API_VERSION, subpath)
+        return 'leads/v1/%s' % subpath
   
-    def get_lead(self, lead_guid, **options):
-        response = self._make_request('list/', params={'guids[0]': lead_guid}, **options)
-        indv_lead = Lead(response['body'][0])
-        return indv_lead
-    
-    def search_leads(self, search_value, **options):
-        response = self._make_request('list/', params={'search': search_value}, **options)
-        lead_objs = []
-        for indv_leads in response['body']:
-            indv_lead_obj = Lead(indv_leads)
-            lead_objs.append(indv_lead_obj)
-        return lead_objs
+    def get_lead(self, guid, **options):
+        return self.get_leads(guid, **options)[0]
+
+    def get_leads(self, *guids, **options):
+        """Supports all the search parameters in the API as well as python underscored variants"""
+        params = {}
+        for i in xrange(len(guids)):
+            params['guids[%s]'%i] = guids[i]
+        for o in options:
+            key = _SEARCH_OPTIONS_DICT.get(o)
+            if key:
+                params[key] = options[o]
+                if o in _BOOLEAN_SEARCH_OPTIONS:
+                    params[key] = str(params[key]).lower()
+        return self._make_request('list/', params, **options)
     
     def update_lead(self, lead_guid, update_data={}, **options):
-        response = self._make_request('lead/%s/' % lead_guid, data=str(update_data), method='PUT', **options)
-        if response['status'] == 200:
-            lead_response = self._make_request('list/', params={'guids[0]': lead_guid}, **options)
-            indv_lead = Lead(lead_response['body'][0])
-            return indv_lead
-    
-    def offset_leads(self, offset, **options):
-        response = self._make_request('list/', params={'offset': offset}, **options)
-        lead_objs = []
-        for indv_leads in response['body']:
-            indv_lead_obj = Lead(indv_leads)
-            lead_objs.append(indv_lead_obj)
-        return lead_objs
+        return self._make_request('lead/%s/' % lead_guid, data=update_data, method='PUT', **options)
     
     def get_webhook(self, **options):  #WTF are these 2 methods for?
         return self._make_request('callback-url', **options)
@@ -162,18 +212,12 @@ class HubSpotLeadsClient(HubSpotClient):
     
     def close_lead(self, lead_guid, close_time=None, **options):
         if close_time == None:
-            now = int(time.time()*1000)
-            data = "{'guid':'%s', 'closedAt': '%s'}" % (lead_guid, now)
-        else:
-            data = "{'guid':'%s', 'closedAt': '%s'}" % (lead_guid, close_time)
-        response = self._make_request('lead/%s/' % lead_guid, data=str(data), method='PUT', **options)
-        if response['status'] == 200:
-            lead_response = self._make_request('list/', params={'guids[0]': lead_guid}, **options)
-            indv_lead = Lead(lead_response['body'][0])
-            return indv_lead
+            close_time = int(time.time()*1000)
+        data = {'guid':lead_guid, 'closedAt': close_time}
+        return self.update_lead(lead_guid, data)
     
 
-class HubSpotLeadNurtureClient(HubSpotClient):
+class NurturingClient(BaseClient):
   
     def _create_path(self, subpath):
         return 'nurture/v%s/%s' % (HUBSPOT_LEADS_API_VERSION, subpath)
@@ -227,7 +271,7 @@ class HubSpotLeadNurtureClient(HubSpotClient):
         return message
     
 
-class HubSpotEventClient(HubSpotClient):
+class EventClient(BaseClient):
   
     def _create_path(self, subpath):
         return 'events/v%s/%s' % (HUBSPOT_LEADS_API_VERSION, subpath)
@@ -255,7 +299,7 @@ class HubSpotEventClient(HubSpotClient):
         return self._make_request('events', data=event_data, method='POST', **options)
 
 
-class HubSpotSettingsClient(HubSpotClient):
+class SettingsClient(BaseClient):
     
     def _create_path(self, subpath):
         return 'settings/v%s/%s' % (HUBSPOT_LEADS_API_VERSION, subpath)
@@ -277,7 +321,7 @@ class HubSpotSettingsClient(HubSpotClient):
         return self._make_request('settings', data=data, method='POST', **options)
   
 
-class HubSpotBlogClient(HubSpotClient):
+class BlogClient(BaseClient):
   
     def _create_path(self, subpath):
         return 'blog/v%s/%s' % (HUBSPOT_BLOG_API_VERSION, subpath)
@@ -422,33 +466,3 @@ class HubSpotBlogClient(HubSpotClient):
         return inv_blog_post_obj
     
 
-# UTILITIES
-def _hs_decode(s):
-    return base64.urlsafe_b64decode(s + '=' * (4 - len(s) % 4))
-
-def verify_signed_hubspot_request(signed_request):
-    """
-    Return the payload from the signed request, or raise an informative
-    exception if it fails to decode properly
-    """
-    if not signed_request:
-        raise Exception("No signed request passed in")
-
-    signed_request = str(signed_request) # convert from unicode
-
-    if "." not in signed_request:
-        raise Exception("improperly formed signed request -- missing '.'")
-
-    signature, payload = signed_request.split(".",1)
-    if not signature:
-        raise Exception("No signature found in signed request")
-
-    decoded_signature = _hs_decode(signature)
-    decoded_payload = _hs_decode(payload)
-
-    expected_signature = hmac.new(MARKETPLACE_SECRET, decoded_payload, hashlib.sha1).digest()
-
-    if(expected_signature != decoded_signature):
-        raise Exception("Signature doesn't match expectation")
-
-    return decoded_payload

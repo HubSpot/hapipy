@@ -11,7 +11,7 @@ def list_to_dict_with_python_case_keys(list_):
             python_variant = item[0].lower() + ''.join([c if c.lower()==c else '_%s'%c.lower() for c in item[1:]])
             d[python_variant] = item
 
-_SORT_OPTIONS = [
+SORT_OPTIONS = [
     'firstName',
     'lastName',
     'email',
@@ -22,15 +22,15 @@ _SORT_OPTIONS = [
     'lastConvertedAt',
     'lastModifiedAt',
     'closedAt']
-_SORT_OPTIONS_DICT = list_to_dict_with_python_case_keys(_SORT_OPTIONS)
-_TIME_PIVOT_OPTIONS = [
+SORT_OPTIONS_DICT = list_to_dict_with_python_case_keys(SORT_OPTIONS)
+TIME_PIVOT_OPTIONS = [
     'insertedAt',
     'firstConvertedAt',
     'lastConvertedAt',
     'lastModifiedAt',
     'closedAt']
-_TIME_PIVOT_OPTIONS_DICT = list_to_dict_with_python_case_keys(_TIME_PIVOT_OPTIONS)
-_SEARCH_OPTIONS = [
+TIME_PIVOT_OPTIONS_DICT = list_to_dict_with_python_case_keys(TIME_PIVOT_OPTIONS)
+SEARCH_OPTIONS = [
     'search',
     'sort', 
     'dir',
@@ -44,8 +44,8 @@ _SEARCH_OPTIONS = [
     'eligibleForEmail',
     'bounced',
     'isNotImported']
-_SEARCH_OPTIONS_DICT = list_to_dict_with_python_case_keys(_SEARCH_OPTIONS)
-_BOOLEAN_SEARCH_OPTIONS = [
+SEARCH_OPTIONS_DICT = list_to_dict_with_python_case_keys(SEARCH_OPTIONS)
+BOOLEAN_SEARCH_OPTIONS = [
     'excludeConversionEvents',
     'optout',
     'eligibleForEmail',
@@ -70,10 +70,10 @@ class LeadsClient(BaseClient):
         for i in xrange(len(guids)):
             params['guids[%s]'%i] = guids[i]
         for o in options:
-            key = _SEARCH_OPTIONS_DICT.get(o)
+            key = SEARCH_OPTIONS_DICT.get(o)
             if key:
                 params[key] = options[o]
-                if o in _BOOLEAN_SEARCH_OPTIONS:
+                if o in BOOLEAN_SEARCH_OPTIONS:
                     params[key] = str(params[key]).lower()
         return self._call('list/', params, **options)
     

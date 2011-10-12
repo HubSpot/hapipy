@@ -58,7 +58,7 @@ class LeadsClient(BaseClient):
     The hapipy Leads client uses the _make_request method to call the API for data.  It returns a python object translated from the json return
     """
 
-    def get_path(self, subpath):
+    def _get_path(self, subpath):
         return 'leads/v%s/%s' % (LEADS_API_VERSION, subpath)
   
     def get_lead(self, guid, **options):
@@ -75,18 +75,18 @@ class LeadsClient(BaseClient):
                 params[key] = options[o]
                 if o in _BOOLEAN_SEARCH_OPTIONS:
                     params[key] = str(params[key]).lower()
-        return self.call('list/', params, **options)
+        return self._call('list/', params, **options)
     
     def update_lead(self, guid, update_data=None, **options):
         update_data = update_data or {}
         update_data['guid'] = guid
-        return self.call('lead/%s/' % guid, data=update_data, method='PUT', **options)
+        return self._call('lead/%s/' % guid, data=update_data, method='PUT', **options)
     
     def get_webhook(self, **options):  #WTF are these 2 methods for?
-        return self.call('callback-url', **options)
+        return self._call('callback-url', **options)
     
     def register_webhook(self, url, **options):
-        return self.call('callback-url', params={'url': url}, data={'url': url}, method='POST', **options)
+        return self._call('callback-url', params={'url': url}, data={'url': url}, method='POST', **options)
     
     def close_lead(self, guid, close_time=None, **options):
         self.update_lead(guid, {'closedAt': close_time or int(time.time()*1000)}, **options)

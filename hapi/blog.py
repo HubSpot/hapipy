@@ -5,35 +5,35 @@ BLOG_API_VERSION = '1'
 
 class BlogClient(BaseClient):
   
-    def get_path(self, subpath):
+    def _get_path(self, subpath):
         return 'blog/v%s/%s' % (BLOG_API_VERSION, subpath)
     
     def get_blogs(self, **options):
-        return self.call('list.json', **options)
+        return self._call('list.json', **options)
     
     def get_blog_info(self, blog_guid, **options):
-        return self.call(blog_guid, **options)
+        return self._call(blog_guid, **options)
     
     def get_posts(self, blog_guid, **options):
-        return self.call('%s/posts.json' % blog_guid, **options)
+        return self._call('%s/posts.json' % blog_guid, **options)
     
     def get_draft_posts(self, blog_guid, **options):
-        return self.call('%s/posts.json' % blog_guid, params={'draft': 'true'}, **options)
+        return self._call('%s/posts.json' % blog_guid, params={'draft': 'true'}, **options)
 
     def get_pulished_posts(self, blog_guid, **options):
-        return self.call('%s/posts.json' % blog_guid, params={'draft': 'false'}, **options)
+        return self._call('%s/posts.json' % blog_guid, params={'draft': 'false'}, **options)
     
     def get_blog_comments(self, blog_guid, **options):
-        return self.call('%s/comments.json' % blog_guid, **options)
+        return self._call('%s/comments.json' % blog_guid, **options)
     
     def get_post(self, post_guid, **options):
-        return self.call('posts/%s.json' % post_guid, **options)
+        return self._call('posts/%s.json' % post_guid, **options)
     
     def get_post_comments(self, post_guid, **options):
-        return self.call('posts/%s/comments.json' % post_guid, **options)
+        return self._call('posts/%s/comments.json' % post_guid, **options)
     
     def get_comment(self, comment_guid, **options):
-        return self.call('comments/%s.json' % comment_guid, **options)
+        return self._call('comments/%s.json' % comment_guid, **options)
     
     def create_post(self, blog_guid, author_name, author_email, title, summary, content, tags, **options):
         tag_xml = ''
@@ -50,7 +50,7 @@ class BlogClient(BaseClient):
                     <content type="html"><![CDATA[%s]]></content>
                     %s
                 </entry>''' % (title, author_name, author_email, summary, content, tag_xml)
-        raw_response = self.call('%s/posts.atom' % blog_guid, data=post, method='POST', content_type='application/atom+xml', raw_output=True, **options)
+        raw_response = self._call('%s/posts.atom' % blog_guid, data=post, method='POST', content_type='application/atom+xml', raw_output=True, **options)
         return minidom.parseString(raw_response).id
     
     def update_post(self, post_guid, title, summary, content, meta_desc, meta_keyword, tags, **options):

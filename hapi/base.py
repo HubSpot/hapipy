@@ -20,7 +20,7 @@ class BaseClient(object):
         self.options['connection_type'] = connection_types[protocol]
         self.options['api_base'] = parts[-1]
 
-    def get_path(self, subpath):
+    def _get_path(self, subpath):
         raise Exception("Unimplemented get_path for BaseClient subclass!")
 
     def _create_request(self, conn, subpath, params, method, data, opts):
@@ -28,7 +28,7 @@ class BaseClient(object):
         params['hapikey'] = self.api_key
         if opts.get('hub_id') or opts.get('portal_id'):
             params['portalId'] = opts.get('hub_id') or opts.get('portal_id')
-        url = opts.get('url') or '/%s?%s' % (self.get_path(subpath), urllib.urlencode(params))
+        url = opts.get('url') or '/%s?%s' % (self._get_path(subpath), urllib.urlencode(params))
         headers = {'Content-Type': opts.get('content_type') or 'application/json'}
         if not isinstance(data, str) and headers['Content-Type']=='application/json':
             data = json.dumps(data)
@@ -51,7 +51,7 @@ class BaseClient(object):
                 pass
         return data
 
-    def call(self, subpath, params=None, method='GET', data=None, **options):
+    def _call(self, subpath, params=None, method='GET', data=None, **options):
         opts = self.options.copy()
         opts.update(options)
 

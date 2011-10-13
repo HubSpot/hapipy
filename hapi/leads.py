@@ -10,6 +10,7 @@ def list_to_dict_with_python_case_keys(list_):
         if item.lower() != item:
             python_variant = item[0].lower() + ''.join([c if c.lower()==c else '_%s'%c.lower() for c in item[1:]])
             d[python_variant] = item
+    return d
 
 SORT_OPTIONS = [
     'firstName',
@@ -70,7 +71,7 @@ class LeadsClient(BaseClient):
         for i in xrange(len(guids)):
             params['guids[%s]'%i] = guids[i]
         for o in options:
-            key = SEARCH_OPTIONS_DICT.get(o)
+            key = SEARCH_OPTIONS_DICT.get(o, None)
             if key:
                 params[key] = options[o]
                 if o in BOOLEAN_SEARCH_OPTIONS:

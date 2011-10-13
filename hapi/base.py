@@ -3,11 +3,17 @@ import httplib
 import simplejson as json
 from error import HapiError
 
+#class Request(object):
+    #def __init__(self, method, url, data, headers)
+
+        #super(BaseClient, self).__init__()
+
 
 class BaseClient(object):
     '''Base abstract object for interacting with the HubSpot APIs'''
 
     def __init__(self, api_key, timeout=10, **extra_options):
+        super(BaseClient, self).__init__()
         self.api_key = api_key
         self.options = {'timeout':timeout, 'api_base':'hubapi.com'}
         self.options.update(extra_options)
@@ -34,8 +40,9 @@ class BaseClient(object):
             data = json.dumps(data)
         #logger.debug("%s %s%s  %s %s", (method, opts['api_base'], url, data, headers))
         conn.request(method, url, data, headers)
+        return {'method':method, 'url':url, 'data':data, 'headers':headers, 'host':conn.host, 'timeout':conn.timeout}
 
-    def _digest_result(self, conn):
+    def _digest_result(self, conn, request):
         result = conn.getresponse()
         result.body = result.read()
         #logger.debug("%s %s\n---message---\n%s\n---body---\n%s\n---headers---\n%s\n",
@@ -43,7 +50,7 @@ class BaseClient(object):
         data = result.body
         conn.close()
         if result.status >= 400:
-            raise HapiError(result)
+            raise HapiError(result, request)
         if data and isinstance(data, str):
             try:
                 data = json.loads(data)
@@ -56,8 +63,7 @@ class BaseClient(object):
         opts.update(options)
 
         connection = opts['connection_type'](opts['api_base'], timeout=opts['timeout'])
-        self._create_request(connection, subpath, params, method, data, opts) 
-        return self._digest_result(connection)
-
+        request_info = self._create_request(connection, subpath, params, method, data, opts)
+        return self._digest_result(connection, request_info)
 
     

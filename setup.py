@@ -12,6 +12,6 @@ setup(
     install_requires=[
         'nose==1.1.2',
         'unittest2==0.5.1',
-        'simplejson=2.2.1'
+        'simplejson==2.2.1'
     ]
 )

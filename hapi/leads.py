@@ -72,7 +72,7 @@ class LeadsClient(BaseClient):
             params['guids[%s]'%i] = guids[i]
         for o in options:
             key = SEARCH_OPTIONS_DICT.get(o, None)
-            if key:
+            if key and options[o] is not None:
                 params[key] = options[o]
                 if o in BOOLEAN_SEARCH_OPTIONS:
                     params[key] = str(params[key]).lower()

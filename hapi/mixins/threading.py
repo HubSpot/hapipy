@@ -37,7 +37,7 @@ class PyCurlMixin(object):
         results = client.process_queue()
 
     The results object will then return a list of dicts, containing the response to your calls
-    in the order they were called. Dicts have keys: result, code, and (if something went wrong) exception.
+    in the order they were called. Dicts have keys: data, code, and (if something went wrong) exception.
     """
     _queue = []
 
@@ -107,15 +107,15 @@ class PyCurlMixin(object):
             m.select(1.0)
 
         # Collect data
-        data = []
+        results = []
         for c in m.handles:
             c.status = c.getinfo(c.HTTP_CODE)
-            result = { "result" : self._digest_result(c.body.getvalue()), "code": c.status }
+            result = { "data" : self._digest_result(c.body.getvalue()), "code": c.status }
             if c.status >= 400:
                 # Don't throw the exception because some might have succeeded
                 result['exception'] = HapiThreadedError(c)
 
-            data.append(result)
+            results.append(result)
 
             
         # cleanup
@@ -132,4 +132,4 @@ class PyCurlMixin(object):
         del m.handles
         self._queue = []
 
-        return data
+        return results 

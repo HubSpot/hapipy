@@ -12,8 +12,15 @@ from error import HapiError
 class BaseClient(object):
     '''Base abstract object for interacting with the HubSpot APIs'''
 
-    def __init__(self, api_key, timeout=10, **extra_options):
+    def __init__(self, api_key, timeout=10, mixins=[], **extra_options):
         super(BaseClient, self).__init__()
+        # reverse so that the first one in the list because the first parent
+        mixins.reverse()
+        for mixin_class in mixins:
+            if mixin_class not in self.__class__.__bases__:
+                self.__class__.__bases__ = (mixin_class,) + self.__class__.__bases__
+
+
         self.api_key = api_key
         self.options = {'timeout':timeout, 'api_base':'hubapi.com'}
         self.options.update(extra_options)
@@ -78,8 +85,5 @@ class BaseClient(object):
         data = self._execute_request(connection, request_info)
         return self._digest_result(data)
 
-    def mixin(self, mixin_class):
-        if mixin_class not in self.__class__.__bases__:
-            self.__class__.__bases__ = (mixin_class,) + self.__class__.__bases__
-
+        
     

@@ -2,7 +2,7 @@ import pycurl, cStringIO
 
 class HapiThreadedError(ValueError):
     def __init__(self, curl):
-        super(HapiThreaded, self).__init__(c.body)
+        super(HapiThreadedError, self).__init__(curl.body.getvalue())
         self.c = curl
         self.response_body = self.c.body.getvalue()
         self.response_headers = self.c.response_headers.getvalue()

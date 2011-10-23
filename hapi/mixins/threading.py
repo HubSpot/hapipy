@@ -9,7 +9,7 @@ class HapiThreadedError(ValueError):
 
     def __str__(self):
         return "\n---- request ----\n%s %s%s [timeout=%s]\n\n---- body ----\n%s\n\n---- headers ----\n%s\n\n---- result ----\n%s\n\n---- body ----\n%s\n\n---- headers ----\n%s" % (
-            self.c.getattr('method', ''), 
+            getattr(self.c, 'method', ''), 
             self.c.host, 
             self.c.path, 
             self.c.timeout,

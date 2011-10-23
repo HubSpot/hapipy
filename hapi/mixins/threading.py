@@ -39,8 +39,6 @@ class PyCurlMixin(object):
     The results object will then return a list of dicts, containing the response to your calls
     in the order they were called. Dicts have keys: data, code, and (if something went wrong) exception.
     """
-    _queue = []
-
     def _call(self, subpath, params=None, method='GET', data=None, **options):
         opts = self.options.copy()
         opts.update(options)
@@ -49,6 +47,9 @@ class PyCurlMixin(object):
         self._enqueue(request_parts)
 
     def _enqueue(self, parts):
+        if not hasattr(self, "_queue"):
+            self._queue = []
+
         self._queue.append(parts)
 
     def _create_curl(self, url, headers, data):
@@ -111,7 +112,7 @@ class PyCurlMixin(object):
         for c in m.handles:
             c.status = c.getinfo(c.HTTP_CODE)
             result = { "data" : self._digest_result(c.body.getvalue()), "code": c.status }
-            if c.status >= 400:
+            if not c.status or c.status >= 400:
                 # Don't throw the exception because some might have succeeded
                 result['exception'] = HapiThreadedError(c)
 

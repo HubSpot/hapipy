@@ -60,7 +60,7 @@ class LeadsClient(BaseClient):
     """
 
     def _get_path(self, subpath):
-        return 'leads/v%s/%s' % (LEADS_API_VERSION, subpath)
+        return 'leads/v%s/%s' % (self.options.get('version') or LEADS_API_VERSION, subpath)
   
     def get_lead(self, guid, **options):
         return self.get_leads(guid, **options)[0]

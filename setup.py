@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup(
     name='hapipy',
-    version='2.1.8',
+    version='2.1.9',
     description="A python wrapper around HubSpot's APIs",
     long_description = open('README.md').read(),
     author='Adrian Mott',

@@ -3,12 +3,6 @@ import httplib
 import simplejson as json
 from error import HapiError
 
-#class Request(object):
-    #def __init__(self, method, url, data, headers)
-
-        #super(BaseClient, self).__init__()
-
-
 class BaseClient(object):
     '''Base abstract object for interacting with the HubSpot APIs'''
 

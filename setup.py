@@ -9,7 +9,7 @@ setup(
     author='Adrian Mott',
     author_email='amott@hubspot.com',
     url='https://github.com/HubSpot/hapipy',
-    download_url='https://github.com/HubSpot/hapipy/tarball/v2.1.7',
+    download_url='https://github.com/HubSpot/hapipy/tarball/v2.1.8',
     license='LICENSE.txt',
     packages=['hapi'],
     install_requires=[

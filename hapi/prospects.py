@@ -32,7 +32,7 @@ class ProspectsClient(BaseClient):
         return self._call('filters', data={'organization': company_name}, method="POST")
         
     def unhide_prospect(self, company_name):
-        return self._call('filters', {'organization': company_name}, method="DELETE")
+        return self._call('filters', data={'organization': company_name}, method="DELETE")
         
     def get_options_for_query(self, query):
         return self._call('typeahead/', {'q': query})

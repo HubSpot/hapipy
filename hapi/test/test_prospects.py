@@ -14,6 +14,7 @@ class ProspectsClientTest(unittest2.TestCase):
 
     Additional tests and other improvements welcome.
 
+    Questions, comments, etc: http://docs.hubapi.com/wiki/Discussion_Group
     """
     
     def setUp(self):
@@ -78,7 +79,7 @@ class ProspectsClientTest(unittest2.TestCase):
     @attr('api')
     def test_hide_prospect(self):
         # Tries to hide a prospect.
-        data = self.client.hide_prospect('HubSpot')
+        data = self.client.hide_prospect('hubspot')
 
         # If there's no matching prospect, can't hide it, so this might return false.
         # self.assertTrue(len(response))
@@ -87,7 +88,7 @@ class ProspectsClientTest(unittest2.TestCase):
     @attr('api')
     def test_unhide_prospect(self):
         # Tries to un-hide a hidden prospect.
-        data = self.client.unhide_prospect('HubSpot')
+        data = self.client.unhide_prospect('hubspot')
 
         # If there's no matching hidden prospect, can't un-hide it.
         # self.assertTrue(len(response))

@@ -7,7 +7,7 @@ import sys
 class BaseClient(object):
     '''Base abstract object for interacting with the HubSpot APIs'''
 
-    _PYTHON25 = not sys.version_info > (2, 6)
+    _PYTHON25 = sys.version_info < (2, 6)
 
     def __init__(self, api_key, timeout=10, mixins=[], **extra_options):
         super(BaseClient, self).__init__()

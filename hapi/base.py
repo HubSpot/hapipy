@@ -20,7 +20,7 @@ class BaseClient(object):
         self._prepare_connection_type()
 
     def _prepare_connection_type(self):
-        connection_types = {'http': httplib.HTTPConnection, 'https': httplib.HTTPConnection}
+        connection_types = {'http': httplib.HTTPConnection, 'https': httplib.HTTPSConnection}
         parts = self.options['api_base'].split('://')
         protocol = (parts[0:-1]+['https'])[0]
         self.options['connection_type'] = connection_types[protocol]
@@ -37,7 +37,7 @@ class BaseClient(object):
             params['portalId'] = opts.get('hub_id') or opts.get('portal_id')
         url = opts.get('url') or '/%s?%s' % (self._get_path(subpath), urllib.urlencode(params))
         headers = {'Content-Type': opts.get('content_type') or 'application/json'}
-        if data and not isinstance(data, str) and headers['Content-Type']=='application/json':
+        if data and not isinstance(data, basestring) and headers['Content-Type']=='application/json':
             data = json.dumps(data)
 
         return url, headers, data

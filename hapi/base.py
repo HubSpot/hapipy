@@ -4,10 +4,10 @@ import simplejson as json
 from error import HapiError
 import sys
 
+_PYTHON25 = sys.version_info < (2, 6)
+
 class BaseClient(object):
     '''Base abstract object for interacting with the HubSpot APIs'''
-
-    _PYTHON25 = sys.version_info < (2, 6)
 
     def __init__(self, api_key, timeout=10, mixins=[], **extra_options):
         super(BaseClient, self).__init__()

@@ -42,14 +42,14 @@ SEARCH_OPTIONS = [
     'stopTime',
     'timePivot',
     'excludeConversionEvents',
-    'optout',
+    'emailOptOut',
     'eligibleForEmail',
     'bounced',
     'isNotImported']
 SEARCH_OPTIONS_DICT = list_to_dict_with_python_case_keys(SEARCH_OPTIONS)
 BOOLEAN_SEARCH_OPTIONS = set([
     'excludeConversionEvents',
-    'optout',
+    'emailOptOut',
     'eligibleForEmail',
     'bounced',
     'isNotImported'])

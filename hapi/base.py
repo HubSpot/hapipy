@@ -2,9 +2,12 @@ import urllib
 import httplib
 import simplejson as json
 from error import HapiError
+import sys
 
 class BaseClient(object):
     '''Base abstract object for interacting with the HubSpot APIs'''
+
+    appengine = sys.version_info[1] < 6
 
     def __init__(self, api_key, timeout=10, mixins=[], **extra_options):
         super(BaseClient, self).__init__()
@@ -16,7 +19,10 @@ class BaseClient(object):
 
 
         self.api_key = api_key
-        self.options = {'timeout':timeout, 'api_base':'hubapi.com'}
+        if appengine:
+            self.options = {'api_base': 'hubapi.com'}
+        else:
+            self.options = {'timeout':timeout, 'api_base':'hubapi.com'}
         self.options.update(extra_options)
         self._prepare_connection_type()
 
@@ -45,7 +51,10 @@ class BaseClient(object):
 
     def _create_request(self, conn, method, url, headers, data):
         conn.request(method, url, data, headers)
-        return {'method':method, 'url':url, 'data':data, 'headers':headers, 'host':conn.host, 'timeout':conn.timeout}
+        if appengine:
+            return {'method':method, 'url':url, 'data':data, 'headers':headers, 'host':conn.host}
+        else:
+            return {'method':method, 'url':url, 'data':data, 'headers':headers, 'host':conn.host, 'timeout':conn.timeout}
 
     def _execute_request(self, conn, request):
         result = conn.getresponse()
@@ -73,7 +82,10 @@ class BaseClient(object):
 
         url, headers, data = self._prepare_request(subpath, params, data, opts)
 
-        connection = opts['connection_type'](opts['api_base'], timeout=opts['timeout'])
+        if appengine:
+            connection = opts['connection_type'](opts['api_base'])
+        else:
+            connection = opts['connection_type'](opts['api_base'], timeout=opts['timeout'])
         request_info = self._create_request(connection, method, url, headers, data)
 
         data = self._execute_request(connection, request_info)

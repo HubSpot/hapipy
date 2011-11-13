@@ -1,5 +1,6 @@
 import time
 from base import BaseClient
+import logging_helper
 #from pprint import pprint
 
 LEADS_API_VERSION = '1'
@@ -61,6 +62,10 @@ class LeadsClient(BaseClient):
     The hapipy Leads client uses the _make_request method to call the API for data.  It returns a python object translated from the json return
     """
 
+    def __init__(self, *args, **kwargs):
+        super(LeadsClient, self).__init__(*args, **kwargs)
+        self.log = logging_helper.get_log('hapi.leads')
+
     def camelcase_search_options(self, options):
         """change all underscored variants back to what the API is expecting"""
         new_options = {}
@@ -84,7 +89,8 @@ class LeadsClient(BaseClient):
 
     def get_leads(self, *guids, **options):
         """Supports all the search parameters in the API as well as python underscored variants"""
-        options = self.camelcase_search_options(options)
+        original_options = options
+        options = self.camelcase_search_options(options.copy())
         params = {}
         for i in xrange(len(guids)):
             params['guids[%s]'%i] = guids[i]
@@ -92,7 +98,11 @@ class LeadsClient(BaseClient):
             if k in SEARCH_OPTIONS:
                 params[k] = options[k]
                 del options[k]
-        return self._call('list/', params, **options)
+        leads = self._call('list/', params, **options)
+        print "hello??"
+        self.log.info("retrieved %s leads through API ( %soptions=%s )" % 
+                (len(leads), guids and 'guids=%s, '%guids or '', original_options))
+        return leads
 
     def update_lead(self, guid, update_data=None, **options):
         update_data = update_data or {}

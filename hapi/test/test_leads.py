@@ -1,6 +1,7 @@
 import unittest2
 import helper
 from hapi.leads import LeadsClient
+import logger
 
 class LeadsClientTest(unittest2.TestCase):
     def setUp(self):

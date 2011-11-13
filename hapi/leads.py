@@ -99,7 +99,6 @@ class LeadsClient(BaseClient):
                 params[k] = options[k]
                 del options[k]
         leads = self._call('list/', params, **options)
-        print "hello??"
         self.log.info("retrieved %s leads through API ( %soptions=%s )" % 
                 (len(leads), guids and 'guids=%s, '%guids or '', original_options))
         return leads

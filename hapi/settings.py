@@ -19,8 +19,27 @@ class SettingsClient(BaseClient):
         # Returns the settings we know about for this API key.
         return self._call('settings', **options)
     
-    def update_settings(self, data, **options):
+    def get_setting(self, name, **options):
+        # Returns the specific requested setting name, if found.
+        params = { 'name' : name }
+        return self._call('settings', params=params, **options)
+
+    def update_setting(self, data, **options):
         # Updates a specific setting for this API key.
-        return self._call('settings', data=data, method='POST', **options)
+        params = {}
+        if data['name']:
+            params['name'] = data['name']
+        if data['value']:
+            params['value'] = data['value']
+
+        return self._call('settings', params=params, data=data, method='POST', **options)
   
+    def delete_setting(self, name, **options):
+        # "Deletes" a specific setting by emptying out its value.
+        params = {}
+        if name:
+            params['name'] = name
+        else:
+            raise HapiError('Setting name required.')
+        return self._call('settings', params=params, method='DELETE', **options)
 

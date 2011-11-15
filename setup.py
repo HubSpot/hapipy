@@ -3,13 +3,13 @@ from distutils.core import setup
 
 setup(
     name='hapipy',
-    version='2.2.5',
+    version='2.3.0',
     description="A python wrapper around HubSpot's APIs",
     long_description = open('README.md').read(),
-    author='Adrian Mott',
-    author_email='amott@hubspot.com',
+    author='HubSpot Dev Team',
+    author_email='devteam+hapi@hubspot.com',
     url='https://github.com/HubSpot/hapipy',
-    download_url='https://github.com/HubSpot/hapipy/tarball/v2.2.5',
+    download_url='https://github.com/HubSpot/hapipy/tarball/v2.3.0',
     license='LICENSE.txt',
     packages=['hapi'],
     install_requires=[

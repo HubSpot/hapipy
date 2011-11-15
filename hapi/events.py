@@ -1,11 +1,11 @@
 from base import BaseClient
 
-EVENTS_API_VERSION = 1
+EVENTS_API_VERSION = 'v1'
 
 class EventsClient(BaseClient):
   
     def _get_path(self, subpath):
-        return 'events/v%s/%s' % (EVENTS_API_VERSION, subpath)
+        return 'events/%s/%s' % (EVENTS_API_VERSION, subpath)
     
     def get_events(self, **options):
         return self._call('events', **options)
@@ -17,5 +17,5 @@ class EventsClient(BaseClient):
             'url': url,
             'eventType': event_type
         }
-        return self._call('events', data=event_data, method='POST', **options)
+        return self._call('events', params=event_data, method='POST', **options)
 

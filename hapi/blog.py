@@ -51,7 +51,7 @@ class BlogClient(BaseClient):
                     %s
                 </entry>''' % (title, author_name, author_email, summary, content, tag_xml)
         raw_response = self._call('%s/posts.atom' % blog_guid, data=post, method='POST', content_type='application/atom+xml', raw_output=True, **options)
-        return minidom.parseString(raw_response).id
+        return minidom.parseString(raw_response)
     
     def update_post(self, post_guid, title, summary, content, meta_desc, meta_keyword, tags, **options):
         tag_xml = ''
@@ -66,8 +66,8 @@ class BlogClient(BaseClient):
                     <hs:metaDescription>%s</hs:metaDescription>
                     <hs:metaKeywords>%s</hs:metaKeywords>
                 </entry>''' % (title, summary, content, tag_xml, meta_desc, meta_keyword)
-        raw_response = self._make_request('posts/%s.atom' % post_guid, content_type='application/atom+xml', data=post, method='PUT', raw_output=True, **options)
-        return minidom.parseString(raw_response).id
+        raw_response = self._call('posts/%s.atom' % post_guid, data=post, method='PUT', content_type='application/atom+xml', raw_output=True, **options)
+        return minidom.parseString(raw_response)
     
     def publish_post(self, post_guid, publish_time, is_draft, should_notify, **options):
         post = '''<?xml version="1.0" encoding="utf-8"?>
@@ -76,8 +76,8 @@ class BlogClient(BaseClient):
                     <hs:draft>%s</hs:draft>
                     <hs:sendNotifications>%s</hs:sendNotifications>
                 </entry>''' % (publish_time, is_draft, should_notify)
-        raw_response = self._make_request('posts/%s.atom' % post_guid, content_type = 'application/atom+xml', data=post, method='PUT', raw_output=True, **options)
-        return minidom.parseString(raw_response).id
+        raw_response = self._call('posts/%s.atom' % post_guid, data=post, method='PUT', content_type='application/atom+xml', raw_output=True, **options)
+        return minidom.parseString(raw_response)
     
     def create_comment(self, post_guid, author_name, author_email, author_uri, content, **options):
         post = '''<?xml version="1.0" encoding="utf-8"?>
@@ -89,7 +89,6 @@ class BlogClient(BaseClient):
                     </author>
                     <content type="html"><![CDATA[%s]]></content>
                 </entry>''' % (author_name, author_email, author_uri, content)
-        raw_response = self._make_request('posts/%s/comments.atom' % post_guid, content_type='application/atom+xml', data=post, method='POST', raw_output=True, **options)
-        return minidom.parseString(raw_response).id
+        raw_response = self._call('posts/%s/comments.atom' % post_guid, data=post, method='POST', content_type='application/atom+xml', raw_output=True, **options)
+        return minidom.parseString(raw_response)
     
-

@@ -20,7 +20,10 @@ class KeywordsClient(BaseClient):
         data = []
         for keyword in keywords:
             if keyword != '':
-                data.append(dict(keyword=str(keyword)))
+                if type(keyword) is dict:
+                    data.append(keyword)
+                elif type(keyword) is str:
+                    data.append(dict(keyword=str(keyword)))
         return self._call('keywords', data=data, method='PUT', **options)['keywords']
     
     def delete_keyword(self, keyword_guid, **options):

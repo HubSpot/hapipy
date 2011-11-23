@@ -35,12 +35,12 @@ class BlogClient(BaseClient):
     def get_comment(self, comment_guid, **options):
         return self._call('comments/%s.json' % comment_guid, **options)
     
-    def create_post(self, blog_guid, author_name, author_email, title, summary, content, tags, **options):
+    def create_post(self, blog_guid, author_name, author_email, title, summary, content, tags, meta_desc, meta_keyword, **options):
         tag_xml = ''
         for tag in tags:
             tag_xml += '<category term="tag %s" />' % tag
         post = '''<?xml version="1.0" encoding="utf-8"?>
-                <entry xmlns="http://www.w3.org/2005/Atom">
+                <entry xmlns="http://www.w3.org/2005/Atom" xmlns:hs="http://www.hubspot.com/">
                     <title>%s</title>
                     <author>
                         <name>%s</name>
@@ -49,7 +49,9 @@ class BlogClient(BaseClient):
                     <summary>%s</summary>
                     <content type="html"><![CDATA[%s]]></content>
                     %s
-                </entry>''' % (title, author_name, author_email, summary, content, tag_xml)
+                    <hs:metaDescription>%s</hs:metaDescription>
+                    <hs:metaKeywords>%s</hs:metaKeywords>
+                </entry>''' % (title, author_name, author_email, summary, content, tag_xml, meta_desc, meta_keyword)
         raw_response = self._call('%s/posts.atom' % blog_guid, data=post, method='POST', content_type='application/atom+xml', raw_output=True, **options)
         return minidom.parseString(raw_response)
     

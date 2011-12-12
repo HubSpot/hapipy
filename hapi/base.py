@@ -67,7 +67,7 @@ class BaseClient(object):
         return data
 
     def _digest_result(self, data):
-        if data and isinstance(data, str):
+        if data and isinstance(data, basestring):
             try:
                 data = json.loads(data)
             except ValueError:  

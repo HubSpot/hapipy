@@ -27,7 +27,7 @@ class KeywordsClientTest(unittest2.TestCase):
             )
     
     @attr('api')
-    def test_get_keywords(self):        
+    def test_get_keywords(self):
         keywords = self.client.get_keywords()
         self.assertTrue(len(keywords))
         
@@ -54,14 +54,16 @@ class KeywordsClientTest(unittest2.TestCase):
         result = self.client.add_keyword(keyword)
         print "\n\nAdded keyword: %s" % json.dumps(result)
         
-        self.assertEqual(keyword, result['keyword'])
-        self.assertTrue(result['keyword_guid'])
-        self.keyword_guids = [result['keyword_guid']]
+        keywords = result['keywords']
+        first_keyword = keywords[0]
+        self.assertEqual(keyword, first_keyword['keyword'])
+        self.assertTrue(first_keyword['keyword_guid'])
+        self.keyword_guids = [first_keyword['keyword_guid']]
 
         # Make sure it's in the list now
         keywords = self.client.get_keywords()
         
-        keywords = filter(lambda x: x['keyword_guid'] == result['keyword_guid'], keywords)
+        keywords = filter(lambda x: x['keyword_guid'] == first_keyword['keyword_guid'], keywords)
         self.assertTrue(len(keywords) == 1)
         result = keywords[0]
         self.assertTrue(result['keyword'] == keyword)
@@ -88,24 +90,26 @@ class KeywordsClientTest(unittest2.TestCase):
         keywords = filter(lambda x: x['keyword_guid'] in self.keyword_guids, keywords)
         self.assertTrue(len(keywords) == 10)
 
-        print "\n\nAdded multipled keywords: %s" % keywords
+        print "\n\nAdded multiple keywords: %s" % keywords
     
     @attr('api')
     def test_delete_keyword(self):
         # Delete multiple keywords in one API call.
         keyword = 'hapipy_test_keyword%s' % str(random.randint(0,1000))
         result = self.client.add_keyword(keyword)
+        keywords = result['keywords']
+        first_keyword = keywords[0]
         print "\n\nAbout to delete a keyword, result= %s" % json.dumps(result)
 
-        self.client.delete_keyword(result['keyword_guid'])
+        self.client.delete_keyword(first_keyword['keyword_guid'])
         
         # Make sure it's not in the list now
         keywords = self.client.get_keywords()
         
-        keywords = filter(lambda x: x['keyword_guid'] == result['keyword_guid'], keywords)
+        keywords = filter(lambda x: x['keyword_guid'] == first_keyword['keyword_guid'], keywords)
         self.assertTrue(len(keywords) == 0)
         
-        print "\n\nDeleted keyword %s" % json.dumps(result)
+        print "\n\nDeleted keyword %s" % json.dumps(first_keyword)
 
 if __name__ == "__main__":
     unittest2.main()

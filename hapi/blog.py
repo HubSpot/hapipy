@@ -48,16 +48,11 @@ class BlogClient(BaseClient):
         raw_response = self._call('%s/posts.json' % blog_guid, data=post, method='POST', content_type='application/json', raw_output=True, **options)
         return raw_response
     
-    def update_post(self, post_guid, title = None, summary = None, content = None, meta_desc = None, meta_keyword = None, tags = [], **options):
-        param_map = dict(title = 'title', summary = 'summary', content = 'body', meta_desc = 'metaDescription', meta_keyword = 'metaKeywords', tags = 'tags')
-        params_in_use = {}
-        for param, value in locals().items():
-            if value:
-                try:
-                    params_in_use[param_map[param]] = value
-                except KeyError:
-                    pass
-        post = json.dumps(params_in_use)
+    def update_post(self, post_guid, title=None, summary=None, content=None, meta_desc=None, meta_keyword=None, tags=None, **options):
+        tags = tags or []
+        update_param_translation = dict(title='title', summary='summary', content='body', meta_desc='metaDescription', meta_keyword='metaKeywords', tags='tags')
+        post_dict = dict([(k,locals()[p]) for p,k in update_param_translation.iteritems() if locals().get(p)])
+        post = json.dumps(post_dict)
         raw_response = self._call('posts/%s.json' % post_guid, data=post, method='PUT', content_type='application/json', raw_output=True, **options)
         return raw_response
 

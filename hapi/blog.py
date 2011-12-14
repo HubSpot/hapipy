@@ -49,15 +49,17 @@ class BlogClient(BaseClient):
         return raw_response
     
     def update_post(self, post_guid, title = None, summary = None, content = None, meta_desc = None, meta_keyword = None, tags = [], **options):
-        params = self.update_post.func_code.co_varnames[2:self.update_post.func_code.co_argcount]
         param_map = dict(title = 'title', summary = 'summary', content = 'body', meta_desc = 'metaDescription', meta_keyword = 'metaKeywords', tags = 'tags')
         params_in_use = {}
-        for param in params:
-            if eval(param):
-                params_in_use[param_map[param]] = eval(param)
+        for param, value in locals().items():
+            if value:
+                try:
+                    params_in_use[param_map[param]] = value
+                except KeyError:
+                    pass
         post = json.dumps(params_in_use)
         raw_response = self._call('posts/%s.json' % post_guid, data=post, method='PUT', content_type='application/json', raw_output=True, **options)
-        return raw_response 
+        return raw_response
 
     def publish_post(self, post_guid, should_notify, publish_time = None, is_draft = 'false', **options):
         post = json.dumps(dict(

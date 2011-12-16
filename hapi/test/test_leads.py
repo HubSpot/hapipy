@@ -2,6 +2,7 @@ import unittest2
 import helper
 from hapi.leads import LeadsClient
 import logger
+import time
 
 class LeadsClientTest(unittest2.TestCase):
     def setUp(self):
@@ -27,7 +28,10 @@ class LeadsClientTest(unittest2.TestCase):
         self.assertEquals(2, len(self.client.get_leads(max=2)))
         
     def test_open_lead(self):
-        self.assertEquals(False, self.client.get_lead(self.client.get_leads(timePivot='closedAt', startTime=0)[0]['guid'])['isCustomer'])
+        lead_guid = self.client.get_leads(timePivot='closedAt', startTime=0)[0]['guid']
+        self.client.open_lead(lead_guid)
+        time.sleep(5)
+        self.assertEquals(False, self.client.get_lead(lead_guid)['isCustomer'])
 
 if __name__ == "__main__":
     unittest2.main()

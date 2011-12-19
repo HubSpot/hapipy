@@ -103,16 +103,16 @@ class BlogClientTest(unittest2.TestCase):
     def test_create_post(self):
         blogs = self.client.get_blogs()
         blog = blogs[0]
-        post_to_create = self.client.create_post(blog['guid'], 'Test Author', 'testapi@hubspot.com', 'I am a test post', 'This is a test summary', '<b>This is the content of the blog post</b>', ['tag1', 'tag2'])
+        post_to_create = self.client.create_post(blog['guid'], 'Test Author', 'testapi@hubspot.com', 'I am a test post', 'This is a test summary', '<b>This is the content of the blog post</b>', ['tag1', 'tag2'], 'test metaDescription!', 'these are totally test keywords.')
         self.assertTrue(post_to_create)
-        post = post_to_create.toprettyxml()
+        post = json.dumps(post_to_create)
         print "Created a blog post: %s" % post
     
     @attr('api')
     def test_update_post(self):
-        post_to_update = self.client.update_post('6a0626c6-98f1-4b7c-a3c0-0b5a1daabf2b', 'I am a test post title UPDATED', 'This is a test summary', '<b>This is the content of the blog post updated</b>', 'meta desc updated', ['keyword1', 'keyword2'], ['tag1', 'tag2', 'tag4'])
+        post_to_update = self.client.update_post(post_guid = '6a0626c6-98f1-4b7c-a3c0-0b5a1daabf2b', title = 'I am a test post title UPDATED', summary = 'This is a test summary', content = '<b>This is the content of the blog post updated</b>', meta_desc = 'meta desc updated', meta_keyword = 'keyword1, keyword2', tags = ['tag1', 'tag2', 'tag4'])
         self.assertTrue(post_to_update)
-        post = post_to_update.toprettyxml()
+        post = json.dumps(post_to_update)
         print "Updated a blog post: %s" % post
     
     @attr('api')
@@ -120,14 +120,14 @@ class BlogClientTest(unittest2.TestCase):
         now = "2100-03-20T10:10:00Z"
         post_to_publish = self.client.publish_post('6a0626c6-98f1-4b7c-a3c0-0b5a1daabf2b', now, 0, 0)
         self.assertTrue(post_to_publish)
-        post = post_to_publish.toprettyxml()
+        post = json.dumps(post_to_publish)
         print "Published a blog post: %s" % post
     
     @attr('api')
     def test_create_comment(self):
         comment = self.client.create_comment('6a0626c6-98f1-4b7c-a3c0-0b5a1daabf2b', 'Test Comment Author', 'testapi@hubspot.com', 'http://hubspot.com', 'I am a test comment')
         self.assertTrue(comment)
-        posted_comment = comment.toprettyxml()
+        posted_comment = json.dumps(comment)
         print "Published a blog post: %s" % posted_comment
     
     

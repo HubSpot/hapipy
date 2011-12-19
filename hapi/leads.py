@@ -117,4 +117,6 @@ class LeadsClient(BaseClient):
     def close_lead(self, guid, close_time=None, **options):
         self.update_lead(guid, {'closedAt': close_time or int(time.time()*1000)}, **options)
     
+    def open_lead(self, guid, **options):
+        self.update_lead(guid, {'closedAt': ''}, **options)
 

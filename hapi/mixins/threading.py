@@ -1,3 +1,11 @@
+'''
+The the mixins in this file require PyCURL in order to make parallel API calls.  
+On OSX and Linux machines, PyCURL can be installed via pip (run "pip install pycurl" ).  
+For windows machines, pre-compiled PyCURL binaries can be downloaded 
+[here for python 2.6 and 2.7](http://www.lfd.uci.edu/~gohlke/pythonlibs/#pycurl), and 
+[here for python 2.5](http://www.lfd.uci.edu/~gohlke/pythonlibs/#pycurl).
+'''
+
 import pycurl, cStringIO
 
 class HapiThreadedError(ValueError):

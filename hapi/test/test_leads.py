@@ -33,5 +33,14 @@ class LeadsClientTest(unittest2.TestCase):
         time.sleep(3)
         self.assertEquals(False, self.client.get_lead(lead_guid)['isCustomer']) 
 
+    def test_close_lead(self):
+        lead_guid = self.client.get_leads(timePivot='closedAt', startTime=0, max=1)[0]['guid']
+        self.client.open_lead(lead_guid)
+        time.sleep(3)
+        self.assertEquals(False, self.client.get_lead(lead_guid)['isCustomer'])
+        self.client.close_lead(lead_guid)
+        time.sleep(3)
+        self.assertEquals(True, self.client.get_lead(lead_guid)['isCustomer'])
+
 if __name__ == "__main__":
     unittest2.main()

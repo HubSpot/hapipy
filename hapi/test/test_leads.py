@@ -28,9 +28,9 @@ class LeadsClientTest(unittest2.TestCase):
         self.assertEquals(2, len(self.client.get_leads(max=2)))
         
     def test_open_lead(self):
-        lead_guid = self.client.get_leads(timePivot='closedAt', startTime=0)[0]['guid']
+        lead_guid = self.client.get_leads(timePivot='closedAt', startTime=0, max=1)[0]['guid']
         self.client.open_lead(lead_guid)
-        time.sleep(5)
+        time.sleep(3)
         self.assertEquals(False, self.client.get_lead(lead_guid)['isCustomer']) 
 
 if __name__ == "__main__":

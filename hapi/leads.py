@@ -103,6 +103,16 @@ class LeadsClient(BaseClient):
                 (len(leads), guids and 'guids=%s, '%guids or '', original_options))
         return leads
 
+    def retrieve_lead(self, *guid, **options):
+        """path could be 
+            https://hubapi.com/leads/v1/lead/(GUID)?hapikey=(your_API_KEY)
+            https://hubapi.com/leads/v1/lead?hapikey=(your_API_KEY)&conversionEventGuid=(event_guid)
+            https://hubapi.com/leads/v1/lead?hapikey=(your_API_KEY)&userToken=(user_token)
+            """
+            
+        return lead = self._call('lead/%s' % guid, **options)
+
+
     def update_lead(self, guid, update_data=None, **options):
         update_data = update_data or {}
         update_data['guid'] = guid

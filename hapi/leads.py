@@ -110,7 +110,7 @@ class LeadsClient(BaseClient):
             https://hubapi.com/leads/v1/lead?hapikey=(your_API_KEY)&userToken=(user_token)
             """
             
-        return lead = self._call('lead/%s' % guid, **options)
+        return self._call('lead/%s' % guid, **options)
 
 
     def update_lead(self, guid, update_data=None, **options):

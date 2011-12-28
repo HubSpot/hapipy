@@ -104,13 +104,18 @@ class LeadsClient(BaseClient):
         return leads
 
     def retrieve_lead(self, *guid, **options):
-        """path could be 
-            https://hubapi.com/leads/v1/lead/(GUID)?hapikey=(your_API_KEY)
-            https://hubapi.com/leads/v1/lead?hapikey=(your_API_KEY)&conversionEventGuid=(event_guid)
-            https://hubapi.com/leads/v1/lead?hapikey=(your_API_KEY)&userToken=(user_token)
-            """
-            
-        return self._call('lead/%s' % guid, **options)
+        cur_guid = guid or '' 
+        params = {}
+        for key in options:
+            params[key] = options[key]
+        """ Set guid to -1 as default for not finding a user """
+        lead = {'guid' : '-1'}
+        """ wrap lead call so that it doesn't error out when not finding a lead """
+        try:
+            lead = self._call('lead/%s' % cur_guid, params, **options)
+        except:
+            """ no lead here """
+        return lead
 
 
     def update_lead(self, guid, update_data=None, **options):

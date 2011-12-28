@@ -38,16 +38,16 @@ class LeadsClientTest(unittest2.TestCase):
         current_lead = self.client.retrieve_lead(lead_guid)
         time.sleep(3)
         lead_userToken = current_lead['userToken']
-        #lead_conversionGuid = current_lead['conversionGuid']
-        
+                
         self.assertEquals(lead_guid, current_lead['guid'])
         self.assertEquals(lead_userToken, self.client.retrieve_lead(userToken="%s" %lead_userToken)['userToken'])
-        #self.assertEquals(lead_conversionGuid, self.client.retrieve_lead(conversionGuid="%s" %lead_conversionGuid)['conversionGuid'])
-
+        
         no_lead_guid = 0
         no_current_lead = self.client.retrieve_lead(no_lead_guid)
         time.sleep(3)
         self.assertEquals('-1', no_current_lead['guid'])
+        
+        """ To do: add in conversionGuid testing """
 
 if __name__ == "__main__":
     unittest2.main()

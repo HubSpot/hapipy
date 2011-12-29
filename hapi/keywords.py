@@ -7,6 +7,11 @@ class KeywordsClient(BaseClient):
     def _get_path(self, subpath):
         return 'keywords/%s/%s' % (KEYWORDS_API_VERSION, subpath)
     
+    # Contains both list of keywords and metadata
+    def get_keywords_info(self, **options):
+        return self._call('keywords', **options)
+    
+    # *Only* returns the list of keywords, does not include additional metadata
     def get_keywords(self, **options):
         return self._call('keywords', **options)['keywords']
     

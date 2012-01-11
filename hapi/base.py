@@ -3,6 +3,7 @@ import httplib
 import simplejson as json
 from error import HapiError
 import sys
+import traceback
 
 _PYTHON25 = sys.version_info < (2, 6)
 
@@ -56,7 +57,10 @@ class BaseClient(object):
         return params
 
     def _execute_request(self, conn, request):
-        result = conn.getresponse()
+        try:
+            result = conn.getresponse()
+        except:
+            raise HapiError(None, request, traceback.format_exc())
         result.body = result.read()
         
         data = result.body

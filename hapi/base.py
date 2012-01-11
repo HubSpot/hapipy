@@ -19,7 +19,7 @@ class BaseClient(object):
 
 
         self.api_key = api_key
-        self.options = {'api_base': 'hubapi.com'}
+        self.options = {'api_base': 'api.hubapi.com'}
         if not _PYTHON25:
             self.options['timeout'] = timeout
         self.options.update(extra_options)

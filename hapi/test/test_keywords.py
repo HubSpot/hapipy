@@ -48,6 +48,19 @@ class KeywordsClientTest(unittest2.TestCase):
         
         print "\n\nGot a single matching keyword: %s" % keyword['keyword_guid']
     
+
+    @attr('api')
+    def test_get_keyword_with_visit_lead(self):
+        # Change the test keyword if you are running on not the demo portal
+        test_keyword = "app"
+        keywords = self.client.get_keywords()
+        if len(keywords) < 1:
+            self.fail("No keywords available for test.")
+        for keyword in keywords:
+            if keyword['keyword'] == test_keyword:
+                self.assertTrue(keyword.has_key('visits'))
+                self.assertTrue(keyword.has_key('leads'))
+
     @attr('api')
     def test_add_keyword(self):        
         # Add a single keyword to this account,

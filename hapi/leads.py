@@ -2,6 +2,8 @@ import time
 from base import BaseClient
 import logging_helper
 #from pprint import pprint
+ 
+
 
 LEADS_API_VERSION = '1'
 
@@ -130,7 +132,7 @@ class LeadsClient(BaseClient):
         return self._call('callback-url', params={'url': url}, data={'url': url}, method='POST', **options)
     
     def close_lead(self, guid, close_time=None, **options):
-        self.update_lead(guid, {'closedAt': close_time or int(time.time()*1000)}, **options)
+        return self.update_lead(guid, {'closedAt': close_time or int(time.time()*1000)}, **options)
     
     def open_lead(self, guid, **options):
         self.update_lead(guid, {'closedAt': ''}, **options)

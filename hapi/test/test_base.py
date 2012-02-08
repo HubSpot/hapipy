@@ -28,7 +28,7 @@ class BaseTest(unittest2.TestCase):
         url, headers, data = self.client._prepare_request(subpath, params, data, opts, doseq)
         self.assertTrue('duplicate=%5B%27key%27%2C+%27value%27%5D' in url)
 
-        # with doseq=False the values will be split and assigned their own key
+        # with doseq=True the values will be split and assigned their own key
         # so duplicate=key&duplicate=value
         doseq = True
         url, headers, data = self.client._prepare_request(subpath, params, data, opts, doseq)

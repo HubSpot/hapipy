@@ -43,7 +43,8 @@ class BaseClient(object):
         if opts.get('hub_id') or opts.get('portal_id'):
             params['portalId'] = opts.get('hub_id') or opts.get('portal_id')
         url = opts.get('url') or '/%s?%s' % (self._get_path(subpath), urllib.urlencode(params))
-        headers = {'Content-Type': opts.get('content_type') or 'application/json'}
+        headers = opts.get('headers') or {}
+        headers.update({'Content-Type': opts.get('content_type') or 'application/json'})
         if data and not isinstance(data, basestring) and headers['Content-Type']=='application/json':
             data = json.dumps(data)
 

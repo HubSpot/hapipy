@@ -37,12 +37,12 @@ class BaseClient(object):
     def _get_path(self, subpath):
         raise Exception("Unimplemented get_path for BaseClient subclass!")
 
-    def _prepare_request(self, subpath, params, data, opts):
+    def _prepare_request(self, subpath, params, data, opts, doseq=False):
         params = params or {}
         params['hapikey'] = self.api_key
         if opts.get('hub_id') or opts.get('portal_id'):
             params['portalId'] = opts.get('hub_id') or opts.get('portal_id')
-        url = opts.get('url') or '/%s?%s' % (self._get_path(subpath), urllib.urlencode(params))
+        url = opts.get('url') or '/%s?%s' % (self._get_path(subpath), urllib.urlencode(params, doseq))
         headers = {'Content-Type': opts.get('content_type') or 'application/json'}
         if data and not isinstance(data, basestring) and headers['Content-Type']=='application/json':
             data = json.dumps(data)
@@ -79,11 +79,11 @@ class BaseClient(object):
 
         return data
 
-    def _call(self, subpath, params=None, method='GET', data=None, **options):
+    def _call(self, subpath, params=None, method='GET', data=None, doseq=False, **options):
         opts = self.options.copy()
         opts.update(options)
 
-        url, headers, data = self._prepare_request(subpath, params, data, opts)
+        url, headers, data = self._prepare_request(subpath, params, data, opts, doseq=doseq)
 
         kwargs = {}
         if not _PYTHON25:

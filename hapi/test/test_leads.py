@@ -49,6 +49,9 @@ class LeadsClientTest(unittest2.TestCase):
         time.sleep(3)
         self.assertEquals('-1', no_current_lead['guid'])
 
+    def test_header(self):
+        self.assertEquals(1, len(self.client.get_leads(max=1, **{"headers":{"head1":"val"}})))
+ 
 
 if __name__ == "__main__":
     unittest2.main()

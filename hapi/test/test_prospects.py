@@ -31,7 +31,25 @@ class ProspectsClientTest(unittest2.TestCase):
         prospects = self.client.get_prospects()
         self.assertTrue(len(prospects))
         print "Got some prospects: %s" % json.dumps(prospects)
- 
+
+    @attr('api')
+    def test_get_limited_prospects(self):
+        # Get a specific number of prospects
+        limit = 10
+
+        # Loop through and make sure that we always get the number of prospects
+        # we request. To eliminate flukes, let's loop through and make sure there
+        # is always bread in the oven.
+        while limit > 1:
+            prospects = self.client.get_prospects(limit=limit)
+
+            if prospects['has-more'] is True:
+                self.assertTrue(len(prospects['prospects']) == limit)
+
+            limit -= 1
+
+        print "Always got the right number of prospects: %s" % json.dumps(prospects)
+
     @attr('api')
     def test_get_company(self):
         # Looks up a specific company.

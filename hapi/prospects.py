@@ -25,10 +25,13 @@ class ProspectsClient(BaseClient):
 
         """
         params = {}
+        if limit:
+            params['count'] = limit
+
         if offset:
-          params['timeOffset'] = offset
-          params['orgOffset'] = orgoffset
-          params['count'] = limit
+            params['timeOffset'] = offset
+            params['orgOffset'] = orgoffset
+
         return self._call('timeline', params)
         
     def get_company(self, company_slug):
@@ -51,8 +54,8 @@ class ProspectsClient(BaseClient):
         
         params = {'q': query}
         if offset and orgoffset:
-          params['orgOffset'] = orgoffset
-          params['timeOffset'] = offset
+            params['orgOffset'] = orgoffset
+            params['timeOffset'] = offset
           
         return self._call('search/%s' % search_type, params)
         

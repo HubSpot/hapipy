@@ -47,11 +47,11 @@ class PyCurlMixin(object):
     The results object will then return a list of dicts, containing the response to your calls
     in the order they were called. Dicts have keys: data, code, and (if something went wrong) exception.
     """
-    def _call(self, subpath, params=None, method='GET', data=None, **options):
+    def _call(self, subpath, params=None, method='GET', data=None, doseq=False, **options):
         opts = self.options.copy()
         opts.update(options)
 
-        request_parts = self._prepare_request(subpath, params, data, opts)
+        request_parts = self._prepare_request(subpath, params, data, opts, doseq=doseq)
         self._enqueue(request_parts)
 
     def _enqueue(self, parts):

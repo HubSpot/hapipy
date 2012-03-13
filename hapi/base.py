@@ -2,6 +2,7 @@ import urllib
 import httplib
 import simplejson as json
 from error import HapiError
+import utils
 import sys
 import traceback
 
@@ -10,7 +11,7 @@ _PYTHON25 = sys.version_info < (2, 6)
 class BaseClient(object):
     '''Base abstract object for interacting with the HubSpot APIs'''
 
-    def __init__(self, api_key, timeout=10, mixins=[], **extra_options):
+    def __init__(self, api_key=None, access_token=None, client_id=None, refresh_token=None, timeout=10, mixins=[], **extra_options):
         super(BaseClient, self).__init__()
         # reverse so that the first one in the list because the first parent
         mixins.reverse()
@@ -18,8 +19,14 @@ class BaseClient(object):
             if mixin_class not in self.__class__.__bases__:
                 self.__class__.__bases__ = (mixin_class,) + self.__class__.__bases__
 
-
         self.api_key = api_key
+        self.access_token = access_token
+        self.client_id = client_id
+        self.refresh_token = refresh_token
+        if self.api_key and self.access_token:
+            raise Exception("Cannot use both api_key and access_token.")
+        if not (self.api_key or self.access_token):
+            raise Exception("Missing required credentials.")
         self.options = {'api_base': 'api.hubapi.com'}
         if not _PYTHON25:
             self.options['timeout'] = timeout
@@ -39,7 +46,22 @@ class BaseClient(object):
 
     def _prepare_request(self, subpath, params, data, opts, doseq=False):
         params = params or {}
-        params['hapikey'] = self.api_key
+        if self.api_key:
+            params['hapikey'] = params.get('hapikey') or self.api_key
+        else:
+            params['access_token'] = params.get('access_token') or self.access_token
+            check = utils.auth_checker(params['access_token'])
+            if check >= 400:
+                f = open('hapipy.log', 'a')
+                try:
+                    token_response = utils.refresh_access_token(self.refresh_token, self.client_id)
+                    decoded = json.loads(token_response)
+                    params['access_token'] = decoded['access_token']
+                    f.write('Tried to create a new access token: %s\n' % params['access_token'])
+                except:
+                    raise Exception("Couldn't refresh the access token, please provide a valid access_token or refresh_token.")
+                    f.write("Couldn't refresh the access token, please provide a valid access_token or refresh_token.")
+                f.close()
         if opts.get('hub_id') or opts.get('portal_id'):
             params['portalId'] = opts.get('hub_id') or opts.get('portal_id')
         url = opts.get('url') or '/%s?%s' % (self._get_path(subpath), urllib.urlencode(params, doseq))
@@ -47,7 +69,7 @@ class BaseClient(object):
         headers.update({'Content-Type': opts.get('content_type') or 'application/json'})
         if data and not isinstance(data, basestring) and headers['Content-Type']=='application/json':
             data = json.dumps(data)
-
+        
         return url, headers, data
 
     def _create_request(self, conn, method, url, headers, data):
@@ -83,7 +105,7 @@ class BaseClient(object):
     def _call(self, subpath, params=None, method='GET', data=None, doseq=False, **options):
         opts = self.options.copy()
         opts.update(options)
-
+        
         url, headers, data = self._prepare_request(subpath, params, data, opts, doseq)
 
         kwargs = {}

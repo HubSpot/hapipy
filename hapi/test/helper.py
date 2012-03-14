@@ -6,7 +6,7 @@ def get_options():
     filename = 'test_credentials.json'
     path = os.path.join(os.path.dirname(__file__), filename)
     options = {'api_key':'demo'}
-    #options = {'access_token':'demooooo-oooo-oooo-oooo-oooooooooooo', 'refresh_token':'e218c2f9-6ca6-11e1-8233-5d869850b536', 'client_id':'78c3b7b1-1b88-11e1-829a-3b413536dd4c'}
+    #options = {'access_token':'your_access_token', 'refresh_token':'clients_refresh_token', 'client_id':'your_app_client_ID'}
     if os.path.exists(path):
         try:
             raw_text = open(path).read()

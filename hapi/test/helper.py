@@ -1,5 +1,6 @@
 import os
 import json
+import logger
 
 
 def get_options():

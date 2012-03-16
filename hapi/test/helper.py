@@ -1,11 +1,13 @@
 import os
 import json
+import logger
 
 
 def get_options():
     filename = 'test_credentials.json'
     path = os.path.join(os.path.dirname(__file__), filename)
-    options = {'api_key': 'demo'}
+    options = {'api_key':'demo'}
+    #options = {'access_token':'your_access_token', 'refresh_token':'clients_refresh_token', 'client_id':'your_app_client_ID'}
     if os.path.exists(path):
         try:
             raw_text = open(path).read()
@@ -24,7 +26,7 @@ def get_options():
 
         if not options.get('api_key') and not options.get('hapikey'):
             raise Exception, """
-                '%s' seems to have no 'api_key' specified!\n
+                '%s' seems to have no 'api_key' or 'access_token' specified!\n
                 If this file exists, then you are indicating you want to override the standard 'demo' creds with your own.\n
                 However, I'll need at least an API key to work with, or it definitely won't work.""" % filename
         options['api_key'] = options.get('api_key') or options.get('hapikey')

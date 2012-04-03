@@ -13,6 +13,10 @@ _PYTHON25 = sys.version_info < (2, 6)
 class BaseClient(object):
     '''Base abstract object for interacting with the HubSpot APIs'''
 
+    # Controls how long we sleep for during retries, overridden by unittests
+    # so tests run faster
+    sleep_multiplier = 1
+
     def __init__(self, api_key=None, timeout=10, mixins=[], access_token=None, refresh_token=None, client_id=None,  **extra_options):
         super(BaseClient, self).__init__()
         # reverse so that the first one in the list because the first parent
@@ -133,7 +137,7 @@ class BaseClient(object):
                 data = self._execute_request(connection, request_info)
                 break
             except HapiError, e:
-                if try_count > num_retries:
+                if num_retries > 0 and try_count > num_retries:
                     sys.stderr.write('Too many retries!')
                     raise
                 # Don't retry errors from 300 to 499
@@ -141,7 +145,7 @@ class BaseClient(object):
                     raise
                 sys.stderr.write('HapiError %s calling %s, retrying' % (e, url))
             # exponential back off - wait 0 seconds, 1 second, 3 seconds, 7 seconds, 15 seconds, etc.
-            time.sleep(pow(2, try_count - 1) - 1)
+            time.sleep((pow(2, try_count - 1) - 1) * self.sleep_multiplier)
 
 
         return self._digest_result(data)

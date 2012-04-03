@@ -5,12 +5,17 @@ from error import HapiError
 import utils
 import logging
 import sys
+import time
 import traceback
 
 _PYTHON25 = sys.version_info < (2, 6)
 
 class BaseClient(object):
     '''Base abstract object for interacting with the HubSpot APIs'''
+
+    # Controls how long we sleep for during retries, overridden by unittests
+    # so tests run faster
+    sleep_multiplier = 1
 
     def __init__(self, api_key=None, timeout=10, mixins=[], access_token=None, refresh_token=None, client_id=None,  **extra_options):
         super(BaseClient, self).__init__()
@@ -105,16 +110,44 @@ class BaseClient(object):
     def _call(self, subpath, params=None, method='GET', data=None, doseq=False, **options):
         opts = self.options.copy()
         opts.update(options)
-        
         url, headers, data = self._prepare_request(subpath, params, data, opts, doseq)
 
         kwargs = {}
         if not _PYTHON25:
             kwargs['timeout'] = opts['timeout']
-        connection = opts['connection_type'](opts['api_base'], **kwargs)
-        request_info = self._create_request(connection, method, url, headers, data)
 
-        data = self._execute_request(connection, request_info)
+        num_retries = opts.get('number_retries', 0)
+        # Never retry a POST, PUT, or DELETE unless explicitly told to
+        if method != 'GET' and not opts.get('retry_on_post'):
+            num_retries = 0
+        if num_retries > 6:
+            num_retries = 6
+        emergency_brake = 10
+        try_count = 0
+        data = None
+        while True:
+            emergency_brake -= 1
+            # avoid getting burned by any mistakes in While loop logic
+            if emergency_brake < 1:
+                break
+            try:
+                try_count += 1
+                connection = opts['connection_type'](opts['api_base'], **kwargs)
+                request_info = self._create_request(connection, method, url, headers, data)
+                data = self._execute_request(connection, request_info)
+                break
+            except HapiError, e:
+                if num_retries > 0 and try_count > num_retries:
+                    sys.stderr.write('Too many retries!')
+                    raise
+                # Don't retry errors from 300 to 499
+                if e.result and e.result.status >= 300 and e.result.status < 500:
+                    raise
+                sys.stderr.write('HapiError %s calling %s, retrying' % (e, url))
+            # exponential back off - wait 0 seconds, 1 second, 3 seconds, 7 seconds, 15 seconds, etc.
+            time.sleep((pow(2, try_count - 1) - 1) * self.sleep_multiplier)
+
+
         return self._digest_result(data)
 
         

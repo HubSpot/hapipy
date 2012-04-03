@@ -124,7 +124,6 @@ class BaseClient(object):
             num_retries = 6
         emergency_brake = 10
         try_count = 0
-        data = None
         while True:
             emergency_brake -= 1
             # avoid getting burned by any mistakes in While loop logic

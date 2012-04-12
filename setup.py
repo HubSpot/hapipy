@@ -11,7 +11,7 @@ setup(
     url='https://github.com/HubSpot/hapipy',
     download_url='https://github.com/HubSpot/hapipy/tarball/v2.7.6',
     license='LICENSE.txt',
-    packages=['hapi'],
+    packages=['hapi', 'hapi.mixins'],
     install_requires=[
         'nose==1.1.2',
         'unittest2==0.5.1',

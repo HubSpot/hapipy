@@ -9,7 +9,7 @@ setup(
     author='HubSpot Dev Team',
     author_email='devteam+hapi@hubspot.com',
     url='https://github.com/HubSpot/hapipy',
-    download_url='https://github.com/HubSpot/hapipy/tarball/v2.6.4',
+    download_url='https://github.com/HubSpot/hapipy/tarball/v2.7.6',
     license='LICENSE.txt',
     packages=['hapi'],
     install_requires=[

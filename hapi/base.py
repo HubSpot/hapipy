@@ -136,7 +136,7 @@ class BaseClient(object):
                 data = self._execute_request(connection, request_info)
                 break
             except HapiError, e:
-                if num_retries > 0 and try_count > num_retries:
+                if try_count > num_retries:
                     sys.stderr.write('Too many retries!')
                     raise
                 # Don't retry errors from 300 to 499
@@ -145,8 +145,6 @@ class BaseClient(object):
                 sys.stderr.write('HapiError %s calling %s, retrying' % (e, url))
             # exponential back off - wait 0 seconds, 1 second, 3 seconds, 7 seconds, 15 seconds, etc.
             time.sleep((pow(2, try_count - 1) - 1) * self.sleep_multiplier)
-
-
         return self._digest_result(data)
 
         

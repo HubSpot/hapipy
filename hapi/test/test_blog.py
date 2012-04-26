@@ -58,6 +58,18 @@ class BlogClientTest(unittest2.TestCase):
         blogs = self.client.get_blogs()
         blog = blogs[0]
         
+        blog_posts = self.client.get_published_posts(blog['guid'])
+        self.assertTrue(len(blog_posts) > 2)
+
+        two_blog_posts = self.client.get_published_posts(blog['guid'], max=2)
+        self.assertEquals(len(two_blog_posts), 2)
+        print "Got some published blog posts from the blog: %s" % json.dumps(blog_posts)
+
+    @attr('api')
+    def test_get_pulished_posts(self):
+        blogs = self.client.get_blogs()
+        blog = blogs[0]
+        
         blog_posts = self.client.get_pulished_posts(blog['guid'])
         self.assertTrue(len(blog_posts))
         print "Got some published blog posts from the blog: %s" % json.dumps(blog_posts)

@@ -1,7 +1,8 @@
+from collections import defaultdict
 import unittest2
 
 from hapi.base import BaseClient
-
+from hapi.error import HapiError
 
 class TestBaseClient(BaseClient):
     def _get_path(self, subpath):
@@ -34,3 +35,39 @@ class BaseTest(unittest2.TestCase):
         url, headers, data = self.client._prepare_request(subpath, params, data, opts, doseq)
         print url
         self.assertTrue('duplicate=key&duplicate=' in url)
+        
+    def test_call(self):
+        client = TestBaseClient('key', api_base='base', env='hudson')
+        client.sleep_multiplier = .02
+        client._create_request = lambda *args:None
+
+        counter = dict(count=0)
+        args = ('/my-api-path', {'bebop': 'rocksteady'})
+        kwargs = dict(method='GET', data={}, doseq=False, number_retries=3)
+        def execute_request_with_retries(a, b):
+            counter['count'] += 1
+            if counter['count'] < 2:
+                raise HapiError(defaultdict(str), defaultdict(str)) 
+            else:
+                return 'SUCCESS'
+        client._execute_request = execute_request_with_retries
+
+        # This should fail once, and then succeed
+        result = client._call(*args, **kwargs)
+        self.assertEquals(2, counter['count'])
+        self.assertEquals('SUCCESS', result)
+
+
+
+        def execute_request_failed(a, b):
+            raise HapiError(defaultdict(str), defaultdict(str)) 
+
+        # This should fail and retry and still fail
+        client._execute_request = execute_request_failed
+        raised_error = False
+        try:
+            client._call(*args, **kwargs)
+        except HapiError:
+            raised_error = True
+        self.assertTrue(raised_error)
+

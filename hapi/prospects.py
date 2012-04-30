@@ -15,7 +15,7 @@ class ProspectsClient(BaseClient):
     def _get_path(self, method):
         return 'prospects/%s/%s' % (PROSPECTS_API_VERSION, method)
 
-    def get_prospects(self, offset=None, orgoffset=None):
+    def get_prospects(self, offset=None, orgoffset=None, limit=None):
         """ Return the prospects for the current API key.
 
         Optionally start the result list at the given offset.
@@ -25,9 +25,13 @@ class ProspectsClient(BaseClient):
 
         """
         params = {}
+        if limit:
+            params['count'] = limit
+
         if offset:
-          params['timeOffset'] = offset
-          params['orgOffset'] = orgoffset
+            params['timeOffset'] = offset
+            params['orgOffset'] = orgoffset
+
         return self._call('timeline', params)
         
     def get_company(self, company_slug):
@@ -50,8 +54,8 @@ class ProspectsClient(BaseClient):
         
         params = {'q': query}
         if offset and orgoffset:
-          params['orgOffset'] = orgoffset
-          params['timeOffset'] = offset
+            params['orgOffset'] = orgoffset
+            params['timeOffset'] = offset
           
         return self._call('search/%s' % search_type, params)
         

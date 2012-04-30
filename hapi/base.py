@@ -84,7 +84,7 @@ class BaseClient(object):
             params['timeout'] = conn.timeout
         return params
 
-    def _execute_request_verbose(self, conn, request):
+    def _execute_request_raw(self, conn, request):
         try:
             result = conn.getresponse()
         except:
@@ -98,7 +98,7 @@ class BaseClient(object):
         return result
 
     def _execute_request(self, conn, request):
-        result = self._execute_request_verbose(conn, request)
+        result = self._execute_request_raw(conn, request)
         return result.data
 
     def _digest_result(self, data):
@@ -110,7 +110,7 @@ class BaseClient(object):
 
         return data
 
-    def _call_verbose(self, subpath, params=None, method='GET', data=None, doseq=False, **options):
+    def _call_raw(self, subpath, params=None, method='GET', data=None, doseq=False, **options):
         opts = self.options.copy()
         opts.update(options)
         url, headers, data = self._prepare_request(subpath, params, data, opts, doseq)
@@ -151,5 +151,5 @@ class BaseClient(object):
         return result
 
     def _call(self, subpath, params=None, method='GET', data=None, doseq=False, **options):
-        result = self._call_verbose(subpath, params=params, method=method, data=data, doseq=doseq, **options)
+        result = self._call_raw(subpath, params=params, method=method, data=data, doseq=doseq, **options)
         return self._digest_result(result.body)

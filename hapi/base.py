@@ -84,30 +84,33 @@ class BaseClient(object):
             params['timeout'] = conn.timeout
         return params
 
-    def _execute_request(self, conn, request):
+    def _execute_request_raw(self, conn, request):
         try:
             result = conn.getresponse()
         except:
             raise HapiError(None, request, traceback.format_exc())
         result.body = result.read()
-        
-        data = result.body
+
         conn.close()
         if result.status >= 400:
             raise HapiError(result, request)
 
-        return data
+        return result
+
+    def _execute_request(self, conn, request):
+        result = self._execute_request_raw(conn, request)
+        return result.data
 
     def _digest_result(self, data):
         if data and isinstance(data, basestring):
             try:
                 data = json.loads(data)
-            except ValueError:  
+            except ValueError:
                 pass
 
         return data
 
-    def _call(self, subpath, params=None, method='GET', data=None, doseq=False, **options):
+    def _call_raw(self, subpath, params=None, method='GET', data=None, doseq=False, **options):
         opts = self.options.copy()
         opts.update(options)
         url, headers, data = self._prepare_request(subpath, params, data, opts, doseq)
@@ -133,7 +136,7 @@ class BaseClient(object):
                 try_count += 1
                 connection = opts['connection_type'](opts['api_base'], **kwargs)
                 request_info = self._create_request(connection, method, url, headers, data)
-                data = self._execute_request(connection, request_info)
+                result = self._execute_request_verbose(connection, request_info)
                 break
             except HapiError, e:
                 if try_count > num_retries:
@@ -145,7 +148,8 @@ class BaseClient(object):
                 sys.stderr.write('HapiError %s calling %s, retrying' % (e, url))
             # exponential back off - wait 0 seconds, 1 second, 3 seconds, 7 seconds, 15 seconds, etc.
             time.sleep((pow(2, try_count - 1) - 1) * self.sleep_multiplier)
-        return self._digest_result(data)
+        return result
 
-        
-    
+    def _call(self, subpath, params=None, method='GET', data=None, doseq=False, **options):
+        result = self._call_raw(subpath, params=params, method=method, data=data, doseq=doseq, **options)
+        return self._digest_result(result.body)

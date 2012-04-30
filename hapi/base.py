@@ -107,7 +107,7 @@ class BaseClient(object):
 
         return data
 
-    def _call(self, subpath, params=None, method='GET', data=None, doseq=False, **options):
+    def _call_verbose(self, subpath, params=None, method='GET', data=None, doseq=False, **options):
         opts = self.options.copy()
         opts.update(options)
         url, headers, data = self._prepare_request(subpath, params, data, opts, doseq)
@@ -145,7 +145,8 @@ class BaseClient(object):
                 sys.stderr.write('HapiError %s calling %s, retrying' % (e, url))
             # exponential back off - wait 0 seconds, 1 second, 3 seconds, 7 seconds, 15 seconds, etc.
             time.sleep((pow(2, try_count - 1) - 1) * self.sleep_multiplier)
-        return self._digest_result(data)
+        return data
 
-        
-    
+    def _call(self, subpath, params=None, method='GET', data=None, doseq=False, **options):
+        data = self._call_verbose(subpath, params=params, method=method, data=data, doseq=doseq, **options)
+        return self._digest_result(data)

@@ -58,7 +58,7 @@ class BaseTest(unittest2.TestCase):
                 raise HapiError(defaultdict(str), defaultdict(str)) 
             else:
                 return TestResult(body='SUCCESS')
-        client._execute_request_verbose = execute_request_with_retries
+        client._execute_request_raw = execute_request_with_retries
 
         # This should fail once, and then succeed
         result = client._call(*args, **kwargs)
@@ -71,7 +71,7 @@ class BaseTest(unittest2.TestCase):
             raise HapiError(defaultdict(str), defaultdict(str)) 
 
         # This should fail and retry and still fail
-        client._execute_request_verbose = execute_request_failed
+        client._execute_request_raw = execute_request_failed
         raised_error = False
         try:
             client._call(*args, **kwargs)

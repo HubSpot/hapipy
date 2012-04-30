@@ -136,7 +136,7 @@ class BaseClient(object):
                 try_count += 1
                 connection = opts['connection_type'](opts['api_base'], **kwargs)
                 request_info = self._create_request(connection, method, url, headers, data)
-                result = self._execute_request_verbose(connection, request_info)
+                result = self._execute_request_raw(connection, request_info)
                 break
             except HapiError, e:
                 if try_count > num_retries:

@@ -8,7 +8,7 @@ class HapiError(ValueError):
         self.err = err
 
     def __str__(self):
-        if self.result:
+        if self.request:
             return "\n---- request ----\n%s %s%s [timeout=%s]\n\n---- body ----\n%s\n\n---- headers ----\n%s\n\n---- result ----\n%s %s\n\n---- body ----\n%s\n\n---- headers ----\n%s\n\n---- trigger error ----\n%s\n" % (
                 self.request['method'], self.request['host'], self.request['url'], self.request['timeout'],
                 self.request['data'],

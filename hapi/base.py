@@ -99,7 +99,7 @@ class BaseClient(object):
 
     def _execute_request(self, conn, request):
         result = self._execute_request_raw(conn, request)
-        return result.data
+        return result.body
 
     def _digest_result(self, data):
         if data and isinstance(data, basestring):

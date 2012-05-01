@@ -1,8 +1,10 @@
-
 class HapiError(ValueError):
-    """Any problems get thrown as HapiError exceptions with the relevant info inside"""
+    """
+    Any problems get thrown as HapiError exceptions with the relevant info inside
+    """
     def __init__(self, result, request, err=None):
-        super(HapiError,self).__init__(result and result.reason or "Unknown Reason")
+        super(HapiError, self).__init__(result and result.reason or "Unknown Reason")
+
         self.result = result
         self.request = request
         self.err = err

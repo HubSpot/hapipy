@@ -87,11 +87,12 @@ class BaseClient(object):
     def _execute_request_raw(self, conn, request):
         try:
             result = conn.getresponse()
+            result.body = result.read()
         except:
             raise HapiError(None, request, traceback.format_exc())
-        result.body = result.read()
+        finally:
+            conn.close()
 
-        conn.close()
         if result.status >= 400:
             raise HapiError(result, request)
 
@@ -99,7 +100,7 @@ class BaseClient(object):
 
     def _execute_request(self, conn, request):
         result = self._execute_request_raw(conn, request)
-        return result.data
+        return result.body
 
     def _digest_result(self, data):
         if data and isinstance(data, basestring):

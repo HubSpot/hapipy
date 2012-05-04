@@ -1,12 +1,14 @@
 import urllib
 import httplib
 import simplejson as json
-from error import HapiError
 import utils
 import logging
 import sys
 import time
 import traceback
+
+from error import HapiError, HapiBadRequest, HapiNotFound, HapiTimeout, HapiServerError
+
 
 _PYTHON25 = sys.version_info < (2, 6)
 
@@ -88,12 +90,16 @@ class BaseClient(object):
         try:
             result = conn.getresponse()
         except:
-            raise HapiError(None, request, traceback.format_exc())
+            raise HapiTimeout(None, request, traceback.format_exc())
         result.body = result.read()
 
         conn.close()
-        if result.status >= 400:
-            raise HapiError(result, request)
+        if result.status in (404, 410):
+            raise HapiNotFound(result, request)
+        elif result.status >= 400 and result.status < 500 or result.status == 501:
+            raise HapiBadRequest(result, request)
+        elif result.status >= 500:
+            raise HapiServerError(result, request)
 
         return result
 

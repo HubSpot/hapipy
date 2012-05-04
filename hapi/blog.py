@@ -20,6 +20,12 @@ class BlogClient(BaseClient):
     def get_draft_posts(self, blog_guid, **options):
         return self._call('%s/posts.json' % blog_guid, params={'draft': 'true'}, **options)
 
+    def get_published_posts(self, blog_guid, **options):
+        params = dict(draft='false')
+        params.update(options)
+        return self._call('%s/posts.json' % blog_guid, params=params)
+
+    # Spelled wrong but left for compat
     def get_pulished_posts(self, blog_guid, **options):
         return self._call('%s/posts.json' % blog_guid, params={'draft': 'false'}, **options)
     

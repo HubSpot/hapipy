@@ -4,9 +4,16 @@ import unittest2
 from hapi.base import BaseClient
 from hapi.error import HapiError
 
+
 class TestBaseClient(BaseClient):
     def _get_path(self, subpath):
         return 'unit_path/%s' % (subpath,)
+
+
+class TestResult(object):
+    def __init__(self, *args, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
 
 class BaseTest(unittest2.TestCase):
@@ -44,13 +51,14 @@ class BaseTest(unittest2.TestCase):
         counter = dict(count=0)
         args = ('/my-api-path', {'bebop': 'rocksteady'})
         kwargs = dict(method='GET', data={}, doseq=False, number_retries=3)
+
         def execute_request_with_retries(a, b):
             counter['count'] += 1
             if counter['count'] < 2:
                 raise HapiError(defaultdict(str), defaultdict(str)) 
             else:
-                return 'SUCCESS'
-        client._execute_request = execute_request_with_retries
+                return TestResult(body='SUCCESS')
+        client._execute_request_raw = execute_request_with_retries
 
         # This should fail once, and then succeed
         result = client._call(*args, **kwargs)
@@ -63,7 +71,7 @@ class BaseTest(unittest2.TestCase):
             raise HapiError(defaultdict(str), defaultdict(str)) 
 
         # This should fail and retry and still fail
-        client._execute_request = execute_request_failed
+        client._execute_request_raw = execute_request_failed
         raised_error = False
         try:
             client._call(*args, **kwargs)

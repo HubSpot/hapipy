@@ -1,9 +1,26 @@
+class EmptyResult(object):
+    '''
+    Null Object pattern to prevent Null reference errors 
+    when there is no result
+    '''
+    def __init__(self):
+        self.status = 0
+        self.body = ''
+        self.msg = ''
+        self.reason = ''
+
+    def __nonzero__(self):
+        return False
+
 
 class HapiError(ValueError):
     """Any problems get thrown as HapiError exceptions with the relevant info inside"""
     def __init__(self, result, request, err=None):
         super(HapiError,self).__init__(result and result.reason or "Unknown Reason")
-        self.result = result
+        if result == None:
+            self.result = EmptyResult()
+        else:
+            self.result = result
         self.request = request
         self.err = err
 
@@ -26,3 +43,16 @@ class HapiError(ValueError):
 
     def __unicode__(self):
         return self.__str__()
+
+# Create more specific error cases, to make filtering errors easier
+class HapiBadRequest(HapiError):
+    '''Error wrapper for most 40X results and 501 results'''
+
+class HapiNotFound(HapiError):
+    '''Error wrapper for 404 and 410 results'''
+
+class HapiTimeout(HapiError):
+    '''Wrapper for socket timeouts, sslerror, and 504'''
+
+class HapiServerError(HapiError):
+    '''Wrapper for most 500 errors'''

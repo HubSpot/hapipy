@@ -49,70 +49,61 @@ class KeywordsClientTest(unittest2.TestCase):
         
         print "\n\nGot a single matching keyword: %s" % keyword['keyword_guid']
     
+# TODO This test does not currently work because there is no traffic on the demo portal
+# Becuase there is no traffic, there are no visits or leads for this to look at
+#    @attr('api')
+#    def test_get_keyword_with_visit_lead(self):
+#        # Change the test keyword if you are running on not the demo portal
+#        test_keyword = "app"
+#        keywords = self.client.get_keywords()
+#        if len(keywords) < 1:
+#            self.fail("No keywords available for test.")
+#        for keyword in keywords:
+#            if keyword['keyword'] == test_keyword:
+#                self.assertTrue(keyword.has_key('visits'))
+#                self.assertTrue(keyword.has_key('leads'))
 
     @attr('api')
-    def test_get_keyword_with_visit_lead(self):
-        # Change the test keyword if you are running on not the demo portal
-        test_keyword = "app"
-        keywords = self.client.get_keywords()
-        if len(keywords) < 1:
-            self.fail("No keywords available for test.")
-        for keyword in keywords:
-            if keyword['keyword'] == test_keyword:
-                self.assertTrue(keyword.has_key('visits'))
-                self.assertTrue(keyword.has_key('leads'))
-
-    @attr('api')
-    def test_add_keyword(self):     
-        keyword = []   
-        # Add a single keyword to this account, it is a guid because a string with a
+    def test_add_keyword(self):
+        keyword = []
+        # Add a single keyword to this self, it is a string with a uuid added because a string with a
         # random number appended to it has too high of a collision rate
         keyword.append('hapipy_test_keyword%s' % str(uuid.uuid4()))
         
         # copy the keyword into 'result' after the client adds it
         result = self.client.add_keyword(keyword)
+        
+        # make sure 'result' has one keyword in it
+        self.assertEqual(len(result['keywords']), 1)
+        
         print "\n\nAdded keyword: %s" % json.dumps(result)
         
-        # copy the keyword of 'result' into 'keywords'
-        keywords = result['keywords']
+        # holds the guid of the keyword being added
+        self.keyword_guid = []
         
-        # copy 'keywords' into 'first_keyword'
-        first_keyword = keywords[0]
+        # get the keyword's guid
+        self.keyword_guid.append(result['keywords'][0]['keyword_guid'])
         
-        # test if 'keyword' has the same keyword as 'first_keyword'
-       # self.assertEqual(keyword[0], first_keyword['keyword'])
-       self.assertTrue(str(keyword[0]), first_keyword['keyword'])
+        # now check if the keyword is in the client
         
-        # test if 'first_keyword' is not nothing
-        self.assertTrue(first_keyword['keyword_guid'])
+        # get what is in the client
+        check = self.client.get_keywords()
         
-        # assign self's guid as 'first_keyword's
-        self.keyword_guids = [first_keyword['keyword_guid']]
+        # filter 'check' if it is in this self
+        check = filter(lambda p: p['keyword_guid'] in self.keyword_guid, check)
+        
+        # check if it was filtered. If it was, it is in the client
+        self.assertEqual(len(check), 1)
+        
+        print "\n\nSaved keyword %s" % json.dumps(check)
 
-        # Make sure it's in the list now
-        keywords = self.client.get_keywords()
-        
-        # Remove from 'keywords' if its guid is the same as 'first_keyword's
-        keywords = filter(lambda x: x['keyword_guid'] == first_keyword['keyword_guid'], keywords)
-        
-        #check if 'keywords' is still there
-        self.assertEqual(len(keywords), 1)
-        
-        # 'result' is 'keywords'
-        result = keywords[0]
-        
-        # check if 'result' is not nothing
-        self.assertTrue(result['keyword'] == keyword)
-        
-        print "\n\nSaved keyword %s" % json.dumps(result)
-    
     @attr('api')
     def test_add_keywords(self):
         # Add multiple Keywords in one API call.
         keywords = []
         for i in range(10):
             # A string with a random number between 0 and 1000 as a test keyword has too high of a collision rate.
-            # switched test string to a guid to decrease collision chance.
+            # switched test string to a uuid to decrease collision chance.
             keywords.append('hapipy_test_keyword%s' % str(uuid.uuid4()))
 
         # copy the keywords into 'result' after the client adds them
@@ -140,7 +131,7 @@ class KeywordsClientTest(unittest2.TestCase):
     @attr('api')
     def test_delete_keyword(self):
         # Delete multiple keywords in one API call.
-        keyword = 'hapipy_test_keyword%s' % str(random.randint(0,1000))
+        keyword = 'hapipy_test_keyword%s' % str(uuid.uuid4())
         result = self.client.add_keyword(keyword)
         keywords = result['keywords']
         first_keyword = keywords[0]
@@ -164,7 +155,7 @@ class KeywordsClientTest(unittest2.TestCase):
 
         keyword_guids = []
         for utf8_keyword_base in utf8_keyword_bases:
-            original_keyword = '%s - %s' % (utf8_keyword_base, str(random.randint(0,1000)))
+            original_keyword = '%s - %s' % (utf8_keyword_base, str(uuid.uuid4()))
             result = self.client.add_keyword(original_keyword)
             print "\n\nAdded keyword: %s" % json.dumps(result)
             print result

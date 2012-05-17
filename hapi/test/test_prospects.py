@@ -97,12 +97,21 @@ class ProspectsClientTest(unittest2.TestCase):
 
     @attr('api')
     def test_hide_prospect(self):
-        # Tries to hide a prospect.
-        data = self.client.hide_prospect('hubspot')
-
-        # If there's no matching prospect, can't hide it, so this might return false.
-        # self.assertTrue(len(response))
-        print "Tried to hide a prospect: %s" % json.dumps(data)
+       # gets one prospect
+       result = self.client.get_prospects(None, None, 1)
+       
+       # checks if it got one
+       self.assertTrue(len(result['prospects']) == 1)
+       
+       # gets just the prospect. result is a list of one prospect
+       prospect = result['prospects']
+       
+       # gets that prospect's slug. This is because hide_prospect wants what organization to hide
+       # Doesn't use 'organization' because there could be spaces and other junk in there
+       prospect_slug = prospect[0]['slug']
+       
+       # Tries to hide the prospect.
+       self.client.hide_prospect(prospect_slug)
 
     @attr('api')
     def test_unhide_prospect(self):
@@ -116,7 +125,7 @@ class ProspectsClientTest(unittest2.TestCase):
             data = self.client.unhide_prospect('')
         except HapiError:
             print "No matching prospect found to un-hide.  This is alright."
-
+            
         # If there's no matching hidden prospect, can't un-hide it.
         # self.assertTrue(len(response))
         if data:

@@ -104,11 +104,11 @@ class ProspectsClientTest(unittest2.TestCase):
        self.assertTrue(len(result['prospects']) == 1)
        
        # gets just the prospect. result is a list of one prospect
-       prospect = result['prospects']
+       prospect = result['prospects'][0]
        
        # gets that prospect's slug. This is because hide_prospect wants what organization to hide
        # Doesn't use 'organization' because there could be spaces and other junk in there
-       prospect_slug = prospect[0]['slug']
+       prospect_slug = prospect['slug']
        
        # Tries to hide the prospect.
        self.client.hide_prospect(prospect_slug)

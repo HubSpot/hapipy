@@ -6,6 +6,8 @@ import logging
 import sys
 import time
 import traceback
+import gzip
+import io
 
 from error import HapiError, HapiBadRequest, HapiNotFound, HapiTimeout, HapiServerError
 
@@ -73,7 +75,8 @@ class BaseClient(object):
             params['portalId'] = opts.get('hub_id') or opts.get('portal_id')
         url = opts.get('url') or '/%s?%s' % (self._get_path(subpath), urllib.urlencode(params, doseq))
         headers = opts.get('headers') or {}
-        headers.update({'Content-Type': opts.get('content_type') or 'application/json'})
+        headers.update({'Accept-Encoding': 'gzip', 'Content-Type': opts.get('content_type') or 'application/json'})
+        
         if data and not isinstance(data, basestring) and headers['Content-Type']=='application/json':
             data = json.dumps(data)
         
@@ -107,7 +110,14 @@ class BaseClient(object):
         result = self._execute_request_raw(conn, request)
         return result.body
 
-    def _digest_result(self, data):
+    def _digest_result(self, data, gzipped=False):
+
+        if gzipped:
+            bi = io.BytesIO(data)
+            gf = gzip.GzipFile(fileobj=bi, mode="rb")
+            gdata = gf.read()
+            data = gdata
+
         if data and isinstance(data, basestring):
             try:
                 data = json.loads(data)
@@ -158,4 +168,9 @@ class BaseClient(object):
 
     def _call(self, subpath, params=None, method='GET', data=None, doseq=False, **options):
         result = self._call_raw(subpath, params=params, method=method, data=data, doseq=doseq, **options)
-        return self._digest_result(result.body)
+        gzipped = False
+        encoding = [i[1] for i in result.getheaders() if i[0] == 'content-encoding']
+        if len(encoding) and encoding[0] == 'gzip':
+            gzipped = True
+
+        return self._digest_result(result.body, gzipped)

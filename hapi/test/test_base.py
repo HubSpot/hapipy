@@ -1,5 +1,8 @@
 from collections import defaultdict
 import unittest2
+import simplejson as json
+from StringIO import StringIO
+from gzip import GzipFile
 
 from hapi.base import BaseClient
 from hapi.error import HapiError
@@ -82,3 +85,24 @@ class BaseTest(unittest2.TestCase):
             raised_error = True
         self.assertTrue(raised_error)
 
+    def test_digest_result(self):
+        """
+        Test parsing returned data in various forms
+        """
+        plain_text = "Hello Plain Text"
+        data = self.client._digest_result(plain_text, False)
+        self.assertEquals(plain_text, data)
+
+        raw_json = '{"hello": "json"}'
+        data = self.client._digest_result(raw_json, False)
+        # Should parse as json into dict
+        self.assertEquals(data.get('hello'), 'json')
+
+        # Write our data into a gzipped stream
+        sio = StringIO()
+        gzf = GzipFile(fileobj=sio, mode='wb')
+        gzf.write('{"hello": "gzipped"}')
+        gzf.close()
+
+        data = self.client._digest_result(sio.getvalue(), True)
+        self.assertEquals(data.get('hello'), 'gzipped')

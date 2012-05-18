@@ -7,7 +7,7 @@ import sys
 import time
 import traceback
 import gzip
-import io
+import StringIO
 
 from error import HapiError, HapiBadRequest, HapiNotFound, HapiTimeout, HapiServerError
 
@@ -115,8 +115,8 @@ class BaseClient(object):
     def _digest_result(self, data, gzipped=False):
 
         if gzipped:
-            bi = io.BytesIO(data)
-            gf = gzip.GzipFile(fileobj=bi, mode="rb")
+            sio = StringIO.StringIO(data)
+            gf = gzip.GzipFile(fileobj=sio, mode="rb")
             gdata = gf.read()
             data = gdata
 

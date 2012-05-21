@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from distutils.core import setup
+from setuptools import setup
 
 setup(
     name='hapipy',
@@ -9,7 +9,7 @@ setup(
     author='HubSpot Dev Team',
     author_email='devteam+hapi@hubspot.com',
     url='https://github.com/HubSpot/hapipy',
-    download_url='https://github.com/HubSpot/hapipy/tarball/v2.7.10',
+    download_url='https://github.com/HubSpot/hapipy/tarball/v2.8.0',
     license='LICENSE.txt',
     packages=['hapi', 'hapi.mixins'],
     install_requires=[

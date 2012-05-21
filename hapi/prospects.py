@@ -65,7 +65,7 @@ class ProspectsClient(BaseClient):
         
     def hide_prospect(self, company_name):
         # Hides the given prospect from the user interface.
-        return self._call('filters', data={'organization': company_name}, method="POST")
+            return self._call('filters', data=('organization=%s' % company_name), method="POST", content_type="application/x-www-form-urlencoded")
         
     def unhide_prospect(self, company_name):
         # Un-hides, i.e. displays, the given prospect in the user interface.

@@ -1,5 +1,4 @@
 # coding: utf-8
-import random
 import unittest2
 import uuid
 
@@ -16,7 +15,7 @@ class KeywordsClientTest(unittest2.TestCase):
 
     Questions, comments: http://docs.hubapi.com/wiki/Discussion_Group
     """
-
+    
     def setUp(self):
         self.client = KeywordsClient(**helper.get_options())
         self.keyword_guids = None
@@ -40,7 +39,7 @@ class KeywordsClientTest(unittest2.TestCase):
         keywords = self.client.get_keywords()
         if len(keywords) < 1:
             self.fail("No keywords available for test.")
-
+        
         keyword = keywords[0]
         print "\n\nGoing to get a specific keyword: %s" % keyword
         
@@ -96,7 +95,7 @@ class KeywordsClientTest(unittest2.TestCase):
         self.assertEqual(len(check), 1)
         
         print "\n\nSaved keyword %s" % json.dumps(check)
-
+    
     @attr('api')
     def test_add_keywords(self):
         # Add multiple Keywords in one API call.
@@ -105,7 +104,7 @@ class KeywordsClientTest(unittest2.TestCase):
             # A string with a random number between 0 and 1000 as a test keyword has too high of a collision rate.
             # switched test string to a uuid to decrease collision chance.
             keywords.append('hapipy_test_keyword%s' % str(uuid.uuid4()))
-
+        
         # copy the keywords into 'result' after the client adds them
         result = self.client.add_keywords(keywords)
         
@@ -125,7 +124,7 @@ class KeywordsClientTest(unittest2.TestCase):
         
         keywords = filter(lambda x: x['keyword_guid'] in self.keyword_guids, keywords)
         self.assertEqual(len(keywords), 10)
-
+        
         print "\n\nAdded multiple keywords: %s" % keywords
     
     @attr('api')
@@ -136,7 +135,7 @@ class KeywordsClientTest(unittest2.TestCase):
         keywords = result['keywords']
         first_keyword = keywords[0]
         print "\n\nAbout to delete a keyword, result= %s" % json.dumps(result)
-
+        
         self.client.delete_keyword(first_keyword['keyword_guid'])
         
         # Make sure it's not in the list now
@@ -146,39 +145,39 @@ class KeywordsClientTest(unittest2.TestCase):
         self.assertTrue(len(keywords) == 0)
         
         print "\n\nDeleted keyword %s" % json.dumps(first_keyword)
-        
+    
     @attr('api')
     def test_utf8_keywords(self):
         # Start with base utf8 characters
         # TODO: Fails when adding simplified chinese char: 广 or cyrillic: л
         utf8_keyword_bases = ['é', 'ü']
-
+        
         keyword_guids = []
         for utf8_keyword_base in utf8_keyword_bases:
             original_keyword = '%s - %s' % (utf8_keyword_base, str(uuid.uuid4()))
             result = self.client.add_keyword(original_keyword)
             print "\n\nAdded keyword: %s" % json.dumps(result)
             print result
-
+            
             keywords_results = result.get('keywords')
             keyword_result = keywords_results[0]
-
+            
             self.assertTrue(keyword_result['keyword_guid'])
             keyword_guids.append(keyword_result['keyword_guid'])
-
+            
             actual_keyword = keyword_result['keyword']
-
+            
             # Convert to utf-8 to compare strings. Returned string is \x-escaped
             if isinstance(original_keyword, unicode):
                 original_unicode_keyword = original_keyword
             else:
                 original_unicode_keyword = original_keyword.decode('utf-8')
-
+            
             if isinstance(actual_keyword, unicode):
                 actual_unicode_keyword = actual_keyword
             else:
                 actual_unicode_keyword = actual_keyword.decode('utf-8')
-
+                
             self.assertEqual(actual_unicode_keyword, original_unicode_keyword)
 
 if __name__ == "__main__":

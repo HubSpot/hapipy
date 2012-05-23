@@ -17,11 +17,19 @@ class NurturingClientTest(unittest2.TestCase):
         self._check_result(campaigns)
         
     def test_parallel_get_campaigns(self):
-        self.client.mixin(PyCurlMixin)
-        self.client.get_campaigns()
-        self.client.get_campaigns()
+        # Because the client established in setup does not have PyCurlMixin,
+        # make another client to handle parallel get campaigns.
+        # All the options are the same, except mixins is PyCurlMixin
+        opts = helper.get_options()
+        
+        opts['mixins'] = [PyCurlMixin]
 
-        results = self.client.process_queue()
+        self.parallel_client = NurturingClient(**opts)
+        
+        self.parallel_client.get_campaigns()
+        self.parallel_client.get_campaigns()
+
+        results = self.parallel_client.process_queue()
         for result in results:
             self.assertTrue('data' in result)
             self.assertTrue('code' in result)

@@ -15,34 +15,74 @@ class EmptyResult(object):
 
 class HapiError(ValueError):
     """Any problems get thrown as HapiError exceptions with the relevant info inside"""
+
+    as_str_template = u'''
+---- request ----
+{method} {host}{url}, [timeout={timeout}]
+
+---- body ----
+{body}
+
+---- headers ----
+{headers}
+
+---- result ----
+{result_status}
+
+---- body -----
+{result_body}
+
+---- headers -----
+{result_headers}
+
+---- reason ----
+{result_reason}
+
+---- trigger error ----
+{error}
+        '''
+
+
     def __init__(self, result, request, err=None):
         super(HapiError,self).__init__(result and result.reason or "Unknown Reason")
         if result == None:
             self.result = EmptyResult()
         else:
             self.result = result
+        if request == None:
+            request = {}
         self.request = request
         self.err = err
 
     def __str__(self):
-        if self.request:
-            return "\n---- request ----\n%s %s%s [timeout=%s]\n\n---- body ----\n%s\n\n---- headers ----\n%s\n\n---- result ----\n%s %s\n\n---- body ----\n%s\n\n---- headers ----\n%s\n\n---- trigger error ----\n%s\n" % (
-                self.request['method'], self.request['host'], self.request['url'], self.request['timeout'],
-                self.request['data'],
-                self.request['headers'],
-                self.result and self.result.status, self.result and self.result.reason,
-                self.result and self.result.body,
-                self.result and self.result.msg,
-                self.err)
-        else:
-            return "\n---- result ----\n%s %s\n\n---- body ----\n%s\n\n---- headers ----\n%s\n\n---- trigger error ----\n%s\n" % (
-                self.result and self.result.status, self.result and self.result.reason,
-                self.result and self.result.body,
-                self.result and self.result.msg,
-                self.err)
+        return self.__unicode__().encode('ascii', 'replace')
+
 
     def __unicode__(self):
-        return self.__str__()
+        params = {}
+        request_keys = ('method', 'host', 'url', 'data', 'headers', 'timeout', 'body')
+        result_attrs = ('status', 'reason', 'msg', 'body', 'headers')
+        params['error'] = self.err
+        for key in request_keys:
+            params[key] = self.request.get(key)
+        for attr in result_attrs:
+            params['result_%s' % attr] = getattr(self.result, attr, '')
+        
+        params = self._dict_vals_to_unicode(params)
+        return self.as_str_template.format(**params)
+
+    def _dict_vals_to_unicode(self, data):
+        unicode_data = {}
+        for key, val in data.items():
+            if not isinstance(val, basestring):
+                unicode_data[key] = unicode(val)
+            elif not isinstance(val, unicode):
+                unicode_data[key] = unicode(val, 'utf8')
+            else:
+                unicode_data[key] = val
+        return unicode_data
+
+
 
 # Create more specific error cases, to make filtering errors easier
 class HapiBadRequest(HapiError):

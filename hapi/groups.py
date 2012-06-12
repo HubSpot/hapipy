@@ -1,4 +1,6 @@
 from hapi_plus.base import BaseClient
+import unicodedata
+import re
 
 GROUPS_API_VERSION = '1'
 
@@ -12,13 +14,25 @@ class GroupsClient(BaseClient):
         return self._call('groups', **options)
 
     def get_group(self, group_name, **options):
-        return self._call('groups/%s' % group_name, **options)
+        valid_name = validate_name(group_name)
+        return self._call('groups/%s' % valid_name, **options)
 
     def create_group(self, group_name,data, **options):
-        return self._call('groups/%s' % group_name, data=data, method='PUT', **options)
+        valid_name = validate_name(group_name)
+        return self._call('groups/%s' % valid_name, data=data, method='PUT', **options)
 
     def update_group(self, group_name, data, **options):
-        return self._call('groups/%s' % group_name, data=data, method='POST', **options)
+        valid_name = validate_name(group_name)
+        return self._call('groups/%s' % valid_name, data=data, method='POST', **options)
 
     def delete_group(self, group_name, **options):
-        return self._call('groups/%s' % group_name, method='DELETE', **options)
+        valid_name = validate_name(group_name)
+        return self._call('groups/%s' % valid_name, method='DELETE', **options)
+
+    def validate_group_name(self, group_name):
+        slug = unicodedata.normalize('NFKD', group_name)
+        slug = slug.encode('ascii', 'ignore').lower()
+        slug = re.sub(r'[^a-z0-9]+', '-', slug).strip('-')
+        slug = re.sub(r'[-]+', '-', slug)
+        
+        return slug

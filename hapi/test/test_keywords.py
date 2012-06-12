@@ -1,10 +1,8 @@
 # coding: utf-8
 import unittest2
 import uuid
-
 import simplejson as json
 from nose.plugins.attrib import attr
-
 import helper
 from hapi.keywords import KeywordsClient
 
@@ -13,7 +11,7 @@ class KeywordsClientTest(unittest2.TestCase):
 
     This file contains some unittest tests for the Keyword API.
 
-    Questions, comments: http://docs.hubapi.com/wiki/Discussion_Group
+    Questions, comments: http://developers.hubspot.com
     """
     
     def setUp(self):

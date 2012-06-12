@@ -19,7 +19,7 @@ class ContactsClientTest(unittest2.TestCase):
 
     TODO: these tests have not been run before, so they may not pass
 
-    Questions, comments, etc: http://docs.hubapi.com/wiki/Discussion_Group
+    Questions, comments, etc: http://developers.hubspot.com
     """
     
     def setUp(self):
@@ -93,7 +93,6 @@ class ContactsClientTest(unittest2.TestCase):
     
     @attr('api')
     def test_create_contact(self):
-        """I am unsure if this is the correct way to make the contact's information in json"""
         # this will be the information of the contact being made. It is JSON, as required according to the API
         dummy_contact = json.dumps(dict(
             email = 'silly@thisisntreal.com', 

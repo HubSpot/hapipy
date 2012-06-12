@@ -1,15 +1,10 @@
 from hapi_plus.base import BaseClient
+from urllib import quote
 
 CONTACTS_API_VERSION = '1'
 
 
 class ContactsClient(BaseClient):
-    """
-    This client and its respective API are under active development and therefore should
-    not be considered stable for use in any production environments. - CODonnell - 11.21.11
-
-    DOCUMENTATION: TODO!
-    """
 
     def _get_path(self, subpath):
         return 'contacts/v%s/%s' % (CONTACTS_API_VERSION, subpath)
@@ -18,7 +13,7 @@ class ContactsClient(BaseClient):
         return self._call('contact/vid/%s/profile' % contact_id, **options)
 
     def get_contact_by_email(self, email, **options):
-        return self._call('contact/email/%s/profile' % email, **options)
+        return self._call('contact/email/%s/profile' % quote(email), **options)
 
     def create_contact(self, data, **options):
         return self._call('contact/', data=data, method='POST', **options)

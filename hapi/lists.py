@@ -4,20 +4,6 @@ CONTACTS_API_VERSION = '1'
 
 
 class ListsClient(BaseClient):
-    """
-    This client and its respective API are under active development and therefore should
-    not be considered stable for use in any production environments. - CODonnell - 11.18.11
-
-    Usage:
-
-    HUBSPOT_API_KEY = 'testkey'
-    ENVIRONMENT = 'qa'
-
-    client = ListsClient(HUBSPOT_API_KEY, hub_id=53, environment=ENVIRONMENT)
-    all_my_lists = client.get_lists()
-
-    DOCUMENTATION: TODO!
-    """
 
     def _get_path(self, subpath):
         return 'contacts/v%s/%s' % (CONTACTS_API_VERSION, subpath)

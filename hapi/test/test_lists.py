@@ -3,16 +3,15 @@ import helper
 import simplejson as json
 from nose.plugins.attrib import attr
 
+PORTAL_ID = 62515
+
 class ListsClientTest(unittest2.TestCase):
     """ 
     Unit tests for the HubSpot List API Python wrapper (hapipy) client.
     
     This file contains some unittest tests for the List API.
     
-    Questions, comments, etc: http://docs.hubapi.com/wiki/Discussion_Group
-    
-    TODO: These tests have not been run before, so they may not pass,
-          test_get_list_intersection and test_get_list_intersection_status need definitions
+    Questions, comments, etc: http://developers.hubspot.com
     """
     def setUp(self):
         self.client = ListsClient(**helper.get_options())
@@ -26,7 +25,7 @@ class ListsClientTest(unittest2.TestCase):
         dummy_data = json.dumps(dict(
             name = 'try_and_get_me',
             dynamic = False,
-            portalId = 62515
+            portalId = PORTAL_ID
         ))
         
         created_list = self.client.create_list(dummy_data)
@@ -57,7 +56,7 @@ class ListsClientTest(unittest2.TestCase):
         dummy_data = json.dumps(dict(
             name = 'first_test_list',
             dynamic = False,
-            portalId = 62515
+            portalId = PORTAL_ID
         ))
         
         created_list = self.client.create_list(dummy_data)
@@ -106,7 +105,7 @@ class ListsClientTest(unittest2.TestCase):
         dummy_data = json.dumps(dict(
             name = 'static_test_list',
             dynamic = False,
-            portalId = 62515
+            portalId = PORTAL_ID
         ))
         
         created_list = self.client.create_list(dummy_data)
@@ -131,7 +130,7 @@ class ListsClientTest(unittest2.TestCase):
         dummy_data = json.dumps(dict(
             name = 'test_dynamic_list',
             dynamic = True,
-            portalId = 62515
+            portalId = PORTAL_ID
         ))
         
         created_list = self.client.create_list(dummy_data)
@@ -180,7 +179,7 @@ class ListsClientTest(unittest2.TestCase):
         dummy_data = json.dumps(dict(
             list_name = 'test_list',
             dynamic = False,
-            portalId = 62515
+            portalId = PORTAL_ID
         ))
         
         # try and make the list
@@ -201,7 +200,7 @@ class ListsClientTest(unittest2.TestCase):
         dummy_data = json.dumps(dict(
             name = 'delete_me',
             dynamic = False,
-            portalId = 62515
+            portalId = PORTAL_ID
         ))
         
         created_list = self.client.create_list(dummy_data)
@@ -218,9 +217,12 @@ class ListsClientTest(unittest2.TestCase):
         ))
         
         # try and do the update
-        self.client.update_list(update_list_id, update_data)
+        http_response = self.client.update_list(update_list_id, update_data)
         
-        """update_list returns an HTTP response. I am not sure how to handle that"""
+        if http_response >= 400:
+            self.fail("Unable to update list!")
+        else:
+            print("Updated a list!")
         
         # clean up
         self.client.delete_list(update_list_id)
@@ -231,7 +233,7 @@ class ListsClientTest(unittest2.TestCase):
         dummy_data = json.dumps(dict(
             name = 'give_me_contact_emails',
             dynamic = False,
-            portalId = 62515
+            portalId = PORTAL_ID
         ))
         
         created_list = self.client.create_list(dummy_data)
@@ -256,7 +258,7 @@ class ListsClientTest(unittest2.TestCase):
         dummy_data = json.dumps(dict(
             name = 'add_a_contact',
             dynamic = False,
-            portalId = 62515
+            portalId = PORTAL_ID
         ))
         
         created_list = self.client.create_list(dummy_data)
@@ -287,7 +289,7 @@ class ListsClientTest(unittest2.TestCase):
         fake_data = json.dumps(dict(
             name = 'remove_this_contact'
             dynamic = False,
-            portalId = 62515
+            portalId = PORTAL_ID
         ))
         
         created_list = self.client.create_list(fake_data)
@@ -325,7 +327,7 @@ class ListsClientTest(unittest2.TestCase):
         dummy_data = json.dumps(dict(
             name = 'should_be_deleted',
             dynamic = False,
-            portalId = 62515
+            portalId = PORTAL_ID
 
         ))
         
@@ -354,7 +356,7 @@ class ListsClientTest(unittest2.TestCase):
         dummy_data = json.dumps(dict(
             name = 'refresh_this_list',
             dynamic = True,
-            portalId = 62515
+            portalId = PORTAL_ID
         ))
         
         created_list = self.client.create_list(dummy_data)
@@ -372,14 +374,7 @@ class ListsClientTest(unittest2.TestCase):
             print "Succesfully refreshed list: %s" % json.dumps(created_list)
             
             # clean up
-            self.client.delete_list(created_list['listId'])
-        
-    @attr('api')
-    def test_get_list_intersection(self):
-        
-    @attr('api')
-    def test_get_list_intersection_status(self):
-        
+            self.client.delete_list(created_list['listId'])   
 
 if __name__ == "__main__":
     unittest2.main()

@@ -96,7 +96,14 @@ class BaseClient(object):
             result = conn.getresponse()
         except:
             raise HapiTimeout(None, request, traceback.format_exc())
-        result.body = result.read()
+
+        encoding = [i[1] for i in result.getheaders() if i[0] == 'content-encoding']
+        if len(encoding) and encoding[0] == 'gzip':
+            sio = StringIO.StringIO(result.read())
+            gf = gzip.GzipFile(fileobj=sio, mode="rb")
+            result.body = gf.read()
+        else:
+            result.body = result.read()
 
         conn.close()
         if result.status in (404, 410):
@@ -112,14 +119,7 @@ class BaseClient(object):
         result = self._execute_request_raw(conn, request)
         return result.body
 
-    def _digest_result(self, data, gzipped=False):
-
-        if gzipped:
-            sio = StringIO.StringIO(data)
-            gf = gzip.GzipFile(fileobj=sio, mode="rb")
-            gdata = gf.read()
-            data = gdata
-
+    def _digest_result(self, data):
         if data and isinstance(data, basestring):
             try:
                 data = json.loads(data)
@@ -170,9 +170,4 @@ class BaseClient(object):
 
     def _call(self, subpath, params=None, method='GET', data=None, doseq=False, **options):
         result = self._call_raw(subpath, params=params, method=method, data=data, doseq=doseq, **options)
-        gzipped = False
-        encoding = [i[1] for i in result.getheaders() if i[0] == 'content-encoding']
-        if len(encoding) and encoding[0] == 'gzip':
-            gzipped = True
-
-        return self._digest_result(result.body, gzipped)
+        return self._digest_result(result.body)

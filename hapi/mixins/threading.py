@@ -119,8 +119,9 @@ class PyCurlMixin(object):
         results = []
         for c in m.handles:
             c.status = c.getinfo(c.HTTP_CODE)
-            gzipped = 'Content-Encoding: gzip' in c.response_headers.getvalue()
-            result = { "data" : self._digest_result(c.body.getvalue(), gzipped), "code": c.status }
+            if 'Content-Encoding: gzip' in c.response_headers.getvalue():
+                c.body = cStringIO.StringIO(self._gunzip_body(c.body.getvalue()))
+            result = { "data" : self._digest_result(c.body.getvalue()), "code": c.status }
             if not c.status or c.status >= 400:
                 # Don't throw the exception because some might have succeeded
                 result['exception'] = HapiThreadedError(c)

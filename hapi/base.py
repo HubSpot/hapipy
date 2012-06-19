@@ -91,6 +91,11 @@ class BaseClient(object):
             params['timeout'] = conn.timeout
         return params
 
+    def _gunzip_body(self, body):
+        sio = StringIO.StringIO(body)
+        gf = gzip.GzipFile(fileobj=sio, mode="rb")
+        return gf.read()
+
     def _execute_request_raw(self, conn, request):
         try:
             result = conn.getresponse()
@@ -99,9 +104,7 @@ class BaseClient(object):
 
         encoding = [i[1] for i in result.getheaders() if i[0] == 'content-encoding']
         if len(encoding) and encoding[0] == 'gzip':
-            sio = StringIO.StringIO(result.read())
-            gf = gzip.GzipFile(fileobj=sio, mode="rb")
-            result.body = gf.read()
+            result.body = self._gunzip_body(result.read())
         else:
             result.body = result.read()
 

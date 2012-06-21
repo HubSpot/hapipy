@@ -96,6 +96,11 @@ class BaseClient(object):
         gf = gzip.GzipFile(fileobj=sio, mode="rb")
         return gf.read()
 
+    def _process_body(self, data, gzipped):
+        if gzipped:
+            return self._gunzip_body(data)
+        return data
+
     def _execute_request_raw(self, conn, request):
         try:
             result = conn.getresponse()
@@ -103,10 +108,7 @@ class BaseClient(object):
             raise HapiTimeout(None, request, traceback.format_exc())
 
         encoding = [i[1] for i in result.getheaders() if i[0] == 'content-encoding']
-        if len(encoding) and encoding[0] == 'gzip':
-            result.body = self._gunzip_body(result.read())
-        else:
-            result.body = result.read()
+        result.body = self._process_body(result.read(), len(encoding) and encoding[0] == 'gzip')
 
         conn.close()
         if result.status in (404, 410):

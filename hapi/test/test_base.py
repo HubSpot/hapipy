@@ -90,11 +90,11 @@ class BaseTest(unittest2.TestCase):
         Test parsing returned data in various forms
         """
         plain_text = "Hello Plain Text"
-        data = self.client._digest_result(plain_text, False)
+        data = self.client._process_body(plain_text, False)
         self.assertEquals(plain_text, data)
 
         raw_json = '{"hello": "json"}'
-        data = self.client._digest_result(raw_json, False)
+        data = json.loads(self.client._process_body(raw_json, False))
         # Should parse as json into dict
         self.assertEquals(data.get('hello'), 'json')
 
@@ -104,5 +104,5 @@ class BaseTest(unittest2.TestCase):
         gzf.write('{"hello": "gzipped"}')
         gzf.close()
 
-        data = self.client._digest_result(sio.getvalue(), True)
+        data = json.loads(self.client._process_body(sio.getvalue(), True))
         self.assertEquals(data.get('hello'), 'gzipped')

@@ -77,7 +77,7 @@ class HapiError(ValueError):
             if not isinstance(val, basestring):
                 unicode_data[key] = unicode(val)
             elif not isinstance(val, unicode):
-                unicode_data[key] = unicode(val, 'utf8')
+                unicode_data[key] = unicode(val, 'utf8', 'ignore')
             else:
                 unicode_data[key] = val
         return unicode_data

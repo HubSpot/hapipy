@@ -3,13 +3,13 @@ from setuptools import setup
 
 setup(
     name='hapipy',
-    version='2.8.3',
+    version='2.8.4',
     description="A python wrapper around HubSpot's APIs",
     long_description = open('README.md').read(),
     author='HubSpot Dev Team',
     author_email='devteam+hapi@hubspot.com',
     url='https://github.com/HubSpot/hapipy',
-    download_url='https://github.com/HubSpot/hapipy/tarball/v2.8.2',
+    download_url='https://github.com/HubSpot/hapipy/tarball/v2.8.4',
     license='LICENSE.txt',
     packages=['hapi', 'hapi.mixins'],
     install_requires=[

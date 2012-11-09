@@ -9,6 +9,9 @@ class EventsClient(BaseClient):
     
     def get_events(self, **options):
         return self._call('events', **options)
+  
+    def get_event(self, event_id, **options):
+        return self._call('events/%s' % event_id, **options)
     
     def create_event(self, description, create_date, url, event_type, **options):
         event_data = {

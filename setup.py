@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='hapipy',
-    version='2.9.0',
+    version='2.9.1',
     description="A python wrapper around HubSpot's APIs",
     long_description=open('README.md').read(),
     author='HubSpot Dev Team',

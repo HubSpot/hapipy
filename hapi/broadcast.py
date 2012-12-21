@@ -44,7 +44,7 @@ class BaseSocialObject(object):
 
 
 class Broadcast(BaseSocialObject):
-    '''Defines a specific social media broadcast message for the broadcast api'''
+    '''Defines a social media broadcast message for the broadcast api'''
 
     # Constants for remote content type
     COS_LP = "coslp"
@@ -56,7 +56,6 @@ class Broadcast(BaseSocialObject):
         self.data_parse(broadcast_data)
 
     def accepted_fields(self):
-        # "clicks" is actually from ShrinkyLinks but passed along
         return [
             'broadcastGuid',
             'campaignGuid',
@@ -86,10 +85,23 @@ class Broadcast(BaseSocialObject):
         self.from_dict(broadcast_data)
 
 
+class Channel(BaseSocialObject):
+    '''Defines the social media channel for the broadcast api'''
+
+    def __init__(self, channel_data):
+        self.data_parse(channel_data)
+
+    def accepted_fields(self):
+        return ['channelGuid', 'accountGuid', 'account',
+            'type', 'name', 'dataMap', 'createdAt', 'settings']
+
+    def data_parse(self, channel_data):
+        self.from_dict(channel_data)
+
+
 class BroadcastClient(BaseClient):
-    '''
-    Broadcast API to manage messages published to social networks
-    '''
+    '''Broadcast API to manage messages published to social networks'''
+
     def _get_path(self, method):
         return 'broadcast/v%s/%s' % (HUBSPOT_BROADCAST_API_VERSION, method)
 
@@ -125,6 +137,14 @@ class BroadcastClient(BaseClient):
             return broadcasts[:limit]
         return broadcasts
 
+    def create_broadcast(self, broadcast):
+        if not isinstance(broadcast, dict):
+            return self._call('broadcasts', data=broadcast.to_dict(),
+                method='POST', content_type='application/json')
+        else:
+            return self._call('broadcasts', data=broadcast,
+                method='POST', content_type='application/json')
+
     def cancel_broadcast(self, broadcast_guid):
         '''
         Cancel a broadcast specified by guid
@@ -134,3 +154,39 @@ class BroadcastClient(BaseClient):
         bcast_dict = self._call(subpath, method='POST', data=broadcast,
             content_type='application/json')
         return bcast_dict
+
+    def get_channel(self, channel_guid):
+        channel = self._call('channels/%s' % channel_guid,
+            content_type='application/json')
+        return Channel(channel)
+
+    def get_channels(self, current=True, publish_only=False,
+        settings=False, include_hidden=False, include_accounts=False):
+        """
+            if "current" is false it will return all channels that a user
+            has published to, possibly including stale channels.
+
+            if publish_only is set to true, then return only the channels
+            that are allowed to publish.
+
+            if settings is true, the API will make extra queries to return
+            the settings for each channel.
+
+        """
+        if publish_only:
+            if current:
+                endpoint = 'channels/setting/publish/current'
+            else:
+                endpoint = 'channels/setting/publish'
+        else:
+            if current:
+                endpoint = 'channels/current'
+            else:
+                endpoint = 'channels'
+
+        result = self._call(endpoint, content_type='application/json',
+            params=dict(settings=settings,
+                includeHidden=include_hidden,
+                includeAccounts=include_accounts))
+
+        return [Channel(c) for c in result]

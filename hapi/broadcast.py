@@ -160,18 +160,16 @@ class BroadcastClient(BaseClient):
             content_type='application/json')
         return Channel(channel)
 
-    def get_channels(self, current=True, publish_only=False,
-        settings=False, include_hidden=False, include_accounts=False):
+    def get_channels(self, current=True, publish_only=False, settings=False):
         """
             if "current" is false it will return all channels that a user
-            has published to, possibly including stale channels.
+            has published to in the past.
 
             if publish_only is set to true, then return only the channels
-            that are allowed to publish.
+            that are publishable.
 
             if settings is true, the API will make extra queries to return
             the settings for each channel.
-
         """
         if publish_only:
             if current:
@@ -184,9 +182,5 @@ class BroadcastClient(BaseClient):
             else:
                 endpoint = 'channels'
 
-        result = self._call(endpoint, content_type='application/json',
-            params=dict(settings=settings,
-                includeHidden=include_hidden,
-                includeAccounts=include_accounts))
-
+        result = self._call(endpoint, content_type='application/json', params=dict(settings=settings))
         return [Channel(c) for c in result]

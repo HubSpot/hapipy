@@ -22,10 +22,7 @@ class BroadcastClientTest(unittest2.TestCase):
     def tearDown(self):
         # Cancel any broadcasts created as part of the tests
         if self.broadcast_guids:
-            map(
-                lambda broadcast_guid: self.client.cancel_broadcast(broadcast_guid),
-                self.broadcast_guids
-            )
+            map(self.client.cancel_broadcast, self.broadcast_guids)
 
     @attr('api')
     def test_get_broadcasts(self):

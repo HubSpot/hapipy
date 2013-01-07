@@ -21,7 +21,7 @@ class BroadcastClientTest(unittest2.TestCase):
 
     def tearDown(self):
         # Cancel any broadcasts created as part of the tests
-        if (self.broadcast_guids):
+        if self.broadcast_guids:
             map(
                 lambda broadcast_guid: self.client.cancel_broadcast(broadcast_guid),
                 self.broadcast_guids
@@ -55,7 +55,7 @@ class BroadcastClientTest(unittest2.TestCase):
     def test_create_broadcast(self):
         content = dict(body="Test hapipy unit tests http://www.hubspot.com")
         channels = self.client.get_channels(current=True, publish_only=True)
-        if (len(channels) == 0):
+        if len(channels) == 0:
             self.fail("Failed to find a publishable channel")
 
         channel = channels[0]

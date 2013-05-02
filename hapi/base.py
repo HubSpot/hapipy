@@ -55,7 +55,7 @@ class BaseClient(object):
     def _get_path(self, subpath):
         raise Exception("Unimplemented get_path for BaseClient subclass!")
 
-    def _prepare_request(self, subpath, params, data, opts, doseq=False):
+    def _prepare_request(self, subpath, params, data, opts, doseq=False, query=''):
         params = params or {}
         if self.api_key:
             params['hapikey'] = params.get('hapikey') or self.api_key
@@ -73,7 +73,13 @@ class BaseClient(object):
                     self.log.info("Couldn't refresh the access token, please provide a valid access_token or refresh_token.")
         if opts.get('hub_id') or opts.get('portal_id'):
             params['portalId'] = opts.get('hub_id') or opts.get('portal_id')
-        url = opts.get('url') or '/%s?%s' % (self._get_path(subpath), urllib.urlencode(params, doseq))
+        if query == None:
+            query = ''
+        if query and query.startswith('?'):
+            query = query[1:]
+        if query and not query.startswith('&'):
+            query = '&' + query
+        url = opts.get('url') or '/%s?%s%s' % (self._get_path(subpath), urllib.urlencode(params, doseq), query)
         headers = opts.get('headers') or {}
         headers.update({
             'Accept-Encoding': 'gzip', 
@@ -133,11 +139,10 @@ class BaseClient(object):
 
         return data
 
-    def _call_raw(self, subpath, params=None, method='GET', data=None, doseq=False, **options):
+    def _call_raw(self, subpath, params=None, method='GET', data=None, doseq=False, query='', **options):
         opts = self.options.copy()
         opts.update(options)
-        url, headers, data = self._prepare_request(subpath, params, data, opts, doseq)
-
+        url, headers, data = self._prepare_request(subpath, params, data, opts, doseq, query)
         kwargs = {}
         if not _PYTHON25:
             kwargs['timeout'] = opts['timeout']
@@ -173,6 +178,6 @@ class BaseClient(object):
             time.sleep((pow(2, try_count - 1) - 1) * self.sleep_multiplier)
         return result
 
-    def _call(self, subpath, params=None, method='GET', data=None, doseq=False, **options):
-        result = self._call_raw(subpath, params=params, method=method, data=data, doseq=doseq, **options)
+    def _call(self, subpath, params=None, method='GET', data=None, doseq=False, query='', **options):
+        result = self._call_raw(subpath, params=params, method=method, data=data, doseq=doseq, query=query, **options)
         return self._digest_result(result.body)

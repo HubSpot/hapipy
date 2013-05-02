@@ -44,14 +44,6 @@ class BlogClientTest(unittest2.TestCase):
         self.assertTrue(len(blog_posts))
         print "Got some blog posts from the blog: GUID: %s" % json.dumps(blog_posts)
     
-    @attr('api')
-    def test_get_draft_posts(self):
-        blogs = self.client.get_blogs()
-        blog = blogs[2]
-        
-        blog_posts = self.client.get_draft_posts(blog['guid'])
-        self.assertTrue(len(blog_posts))
-        print "Got some draft blog posts from the blog: %s" % json.dumps(blog_posts)
     
     @attr('api')
     def test_get_published_posts(self):

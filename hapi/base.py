@@ -77,7 +77,7 @@ class BaseClient(object):
             query = ''
         if query and query.startswith('?'):
             query = query[1:]
-        if query and not query.startswith('?'):
+        if query and not query.startswith('&'):
             query = '&' + query
         url = opts.get('url') or '/%s?%s%s' % (self._get_path(subpath), urllib.urlencode(params, doseq), query)
         headers = opts.get('headers') or {}

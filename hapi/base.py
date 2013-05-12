@@ -14,6 +14,7 @@ from error import HapiError, HapiBadRequest, HapiNotFound, HapiTimeout, HapiServ
 
 _PYTHON25 = sys.version_info < (2, 6)
 
+
 class BaseClient(object):
     '''Base abstract object for interacting with the HubSpot APIs'''
 
@@ -28,7 +29,7 @@ class BaseClient(object):
         for mixin_class in mixins:
             if mixin_class not in self.__class__.__bases__:
                 self.__class__.__bases__ = (mixin_class,) + self.__class__.__bases__
-        
+
         self.api_key = api_key or extra_options.get('api_key')
         self.access_token = access_token or extra_options.get('access_token')
         self.refresh_token = refresh_token or extra_options.get('refresh_token')
@@ -73,7 +74,7 @@ class BaseClient(object):
                     self.log.info("Couldn't refresh the access token, please provide a valid access_token or refresh_token.")
         if opts.get('hub_id') or opts.get('portal_id'):
             params['portalId'] = opts.get('hub_id') or opts.get('portal_id')
-        if query == None:
+        if query is None:
             query = ''
         if query and query.startswith('?'):
             query = query[1:]
@@ -82,17 +83,17 @@ class BaseClient(object):
         url = opts.get('url') or '/%s?%s%s' % (self._get_path(subpath), urllib.urlencode(params, doseq), query)
         headers = opts.get('headers') or {}
         headers.update({
-            'Accept-Encoding': 'gzip', 
+            'Accept-Encoding': 'gzip',
             'Content-Type': opts.get('content_type') or 'application/json'})
-        
-        if data and not isinstance(data, basestring) and headers['Content-Type']=='application/json':
+
+        if data and not isinstance(data, basestring) and headers['Content-Type'] == 'application/json':
             data = json.dumps(data)
-        
+
         return url, headers, data
 
     def _create_request(self, conn, method, url, headers, data):
         conn.request(method, url, data, headers)
-        params = {'method':method, 'url':url, 'data':data, 'headers':headers, 'host':conn.host}
+        params = {'method': method, 'url': url, 'data': data, 'headers': headers, 'host': conn.host}
         if not _PYTHON25:
             params['timeout'] = conn.timeout
         return params
@@ -174,6 +175,12 @@ class BaseClient(object):
                 if e.result and e.result.status >= 300 and e.result.status < 500:
                     raise
                 logging.warning('HapiError %s calling %s, retrying' % (e, url))
+            except HapiTimeout, e:
+                if try_count > num_retries:
+                    logging.warning("Too many retries for %s", url)
+                    raise
+                logging.warning('HapiTimeout %s calling %s, retrying' % (e, url))
+
             # exponential back off - wait 0 seconds, 1 second, 3 seconds, 7 seconds, 15 seconds, etc.
             time.sleep((pow(2, try_count - 1) - 1) * self.sleep_multiplier)
         return result

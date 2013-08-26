@@ -166,7 +166,7 @@ class BaseClient(object):
                 break
             except HapiUnauthorized, e:
                 self.log.warning("401 Unauthorized response to API request.")
-                if self.access_token and self.refresh_token and not retried and self.client_id:
+                if self.access_token and self.refresh_token and self.client_id and not retried:
                     self.log.info("Refreshing access token")
                     try:
                         token_response = utils.refresh_access_token(self.refresh_token, self.client_id)

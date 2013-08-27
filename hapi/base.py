@@ -9,7 +9,7 @@ import traceback
 import gzip
 import StringIO
 
-from error import HapiError, HapiBadRequest, HapiNotFound, HapiTimeout, HapiServerError
+from error import HapiError, HapiBadRequest, HapiNotFound, HapiTimeout, HapiServerError, HapiConflict
 
 
 _PYTHON25 = sys.version_info < (2, 6)
@@ -28,7 +28,7 @@ class BaseClient(object):
         for mixin_class in mixins:
             if mixin_class not in self.__class__.__bases__:
                 self.__class__.__bases__ = (mixin_class,) + self.__class__.__bases__
-        
+
         self.api_key = api_key or extra_options.get('api_key')
         self.access_token = access_token or extra_options.get('access_token')
         self.refresh_token = refresh_token or extra_options.get('refresh_token')
@@ -82,12 +82,12 @@ class BaseClient(object):
         url = opts.get('url') or '/%s?%s%s' % (self._get_path(subpath), urllib.urlencode(params, doseq), query)
         headers = opts.get('headers') or {}
         headers.update({
-            'Accept-Encoding': 'gzip', 
+            'Accept-Encoding': 'gzip',
             'Content-Type': opts.get('content_type') or 'application/json'})
-        
+
         if data and not isinstance(data, basestring) and headers['Content-Type']=='application/json':
             data = json.dumps(data)
-        
+
         return url, headers, data
 
     def _create_request(self, conn, method, url, headers, data):
@@ -119,6 +119,8 @@ class BaseClient(object):
         conn.close()
         if result.status in (404, 410):
             raise HapiNotFound(result, request)
+        elif result.status == 409:
+            raise HapiConflict(result, request)
         elif result.status >= 400 and result.status < 500 or result.status == 501:
             raise HapiBadRequest(result, request)
         elif result.status >= 500:

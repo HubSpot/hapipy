@@ -1,6 +1,6 @@
 class EmptyResult(object):
     '''
-    Null Object pattern to prevent Null reference errors 
+    Null Object pattern to prevent Null reference errors
     when there is no result
     '''
     def __init__(self):
@@ -67,7 +67,7 @@ class HapiError(ValueError):
             params[key] = self.request.get(key)
         for attr in result_attrs:
             params['result_%s' % attr] = getattr(self.result, attr, '')
-        
+
         params = self._dict_vals_to_unicode(params)
         return self.as_str_template.format(**params)
 
@@ -90,6 +90,9 @@ class HapiBadRequest(HapiError):
 
 class HapiNotFound(HapiError):
     '''Error wrapper for 404 and 410 results'''
+
+class HapiConflict(HapiError):
+    '''Error wrapper for 409 results'''
 
 class HapiTimeout(HapiError):
     '''Wrapper for socket timeouts, sslerror, and 504'''

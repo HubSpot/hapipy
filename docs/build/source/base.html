@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>base.py</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="__init__.html">
+                __init__.py
+              </a>
+            
+              
+              <a class="source" href="base.html">
+                base.py
+              </a>
+            
+              
+              <a class="source" href="blog.html">
+                blog.py
+              </a>
+            
+              
+              <a class="source" href="broadcast.html">
+                broadcast.py
+              </a>
+            
+              
+              <a class="source" href="error.html">
+                error.py
+              </a>
+            
+              
+              <a class="source" href="forms.html">
+                forms.py
+              </a>
+            
+              
+              <a class="source" href="keywords.html">
+                keywords.py
+              </a>
+            
+              
+              <a class="source" href="leads.html">
+                leads.py
+              </a>
+            
+              
+              <a class="source" href="logging_helper.html">
+                logging_helper.py
+              </a>
+            
+              
+              <a class="source" href="nurturing.html">
+                nurturing.py
+              </a>
+            
+              
+              <a class="source" href="prospects.html">
+                prospects.py
+              </a>
+            
+              
+              <a class="source" href="settings.html">
+                settings.py
+              </a>
+            
+              
+              <a class="source" href="utils.html">
+                utils.py
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>base.py</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="keyword">import</span> urllib
+<span class="keyword">import</span> httplib
+<span class="keyword">import</span> simplejson <span class="keyword">as</span> json
+<span class="keyword">import</span> utils
+<span class="keyword">import</span> logging
+<span class="keyword">import</span> sys
+<span class="keyword">import</span> time
+<span class="keyword">import</span> traceback
+<span class="keyword">import</span> gzip
+<span class="keyword">import</span> StringIO
+
+<span class="keyword">from</span> error <span class="keyword">import</span> HapiError, HapiBadRequest, HapiNotFound, HapiTimeout, HapiServerError
+
+
+_PYTHON25 = sys.version_info &lt; (<span class="number">2</span>, <span class="number">6</span>)
+
+<span class="class"><span class="keyword">class</span> <span class="title">BaseClient</span><span class="params">(object)</span>:</span>
+    <span class="string">'''Base abstract object for interacting with the HubSpot APIs'''</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Controls how long we sleep for during retries, overridden by unittests
+so tests run faster</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    sleep_multiplier = <span class="number">1</span>
+
+    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, api_key=None, timeout=<span class="number">10</span>, mixins=[], access_token=None, refresh_token=None, client_id=None,  **extra_options)</span>:</span>
+        super(BaseClient, self).__init__()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>reverse so that the first one in the list because the first parent</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        mixins.reverse()
+        <span class="keyword">for</span> mixin_class <span class="keyword">in</span> mixins:
+            <span class="keyword">if</span> mixin_class <span class="keyword">not</span> <span class="keyword">in</span> self.__class__.__bases__:
+                self.__class__.__bases__ = (mixin_class,) + self.__class__.__bases__
+        
+        self.api_key = api_key <span class="keyword">or</span> extra_options.get(<span class="string">'api_key'</span>)
+        self.access_token = access_token <span class="keyword">or</span> extra_options.get(<span class="string">'access_token'</span>)
+        self.refresh_token = refresh_token <span class="keyword">or</span> extra_options.get(<span class="string">'refresh_token'</span>)
+        self.client_id = client_id <span class="keyword">or</span> extra_options.get(<span class="string">'client_id'</span>)
+        self.log = utils.get_log(<span class="string">'hapipy'</span>)
+        <span class="keyword">if</span> self.api_key <span class="keyword">and</span> self.access_token:
+            <span class="keyword">raise</span> Exception(<span class="string">"Cannot use both api_key and access_token."</span>)
+        <span class="keyword">if</span> <span class="keyword">not</span> (self.api_key <span class="keyword">or</span> self.access_token <span class="keyword">or</span> self.refresh_token):
+            <span class="keyword">raise</span> Exception(<span class="string">"Missing required credentials."</span>)
+        self.options = {<span class="string">'api_base'</span>: <span class="string">'api.hubapi.com'</span>}
+        <span class="keyword">if</span> <span class="keyword">not</span> _PYTHON25:
+            self.options[<span class="string">'timeout'</span>] = timeout
+        self.options.update(extra_options)
+        self._prepare_connection_type()
+
+    <span class="function"><span class="keyword">def</span> <span class="title">_prepare_connection_type</span><span class="params">(self)</span>:</span>
+        connection_types = {<span class="string">'http'</span>: httplib.HTTPConnection, <span class="string">'https'</span>: httplib.HTTPSConnection}
+        parts = self.options[<span class="string">'api_base'</span>].split(<span class="string">'://'</span>)
+        protocol = (parts[<span class="number">0</span>:-<span class="number">1</span>]+[<span class="string">'https'</span>])[<span class="number">0</span>]
+        self.options[<span class="string">'connection_type'</span>] = connection_types[protocol]
+        self.options[<span class="string">'protocol'</span>] = protocol
+        self.options[<span class="string">'api_base'</span>] = parts[-<span class="number">1</span>]
+
+    <span class="function"><span class="keyword">def</span> <span class="title">_get_path</span><span class="params">(self, subpath)</span>:</span>
+        <span class="keyword">raise</span> Exception(<span class="string">"Unimplemented get_path for BaseClient subclass!"</span>)
+
+    <span class="function"><span class="keyword">def</span> <span class="title">_prepare_request</span><span class="params">(self, subpath, params, data, opts, doseq=False, query=<span class="string">''</span>)</span>:</span>
+        params = params <span class="keyword">or</span> {}
+        <span class="keyword">if</span> self.api_key:
+            params[<span class="string">'hapikey'</span>] = params.get(<span class="string">'hapikey'</span>) <span class="keyword">or</span> self.api_key
+        <span class="keyword">else</span>:
+            params[<span class="string">'access_token'</span>] = params.get(<span class="string">'access_token'</span>) <span class="keyword">or</span> self.access_token
+            check = utils.auth_checker(params[<span class="string">'access_token'</span>])
+            <span class="keyword">if</span> check &gt;= <span class="number">400</span>:
+                <span class="keyword">try</span>:
+                    token_response = utils.refresh_access_token(self.refresh_token, self.client_id)
+                    decoded = json.loads(token_response)
+                    params[<span class="string">'access_token'</span>] = decoded[<span class="string">'access_token'</span>]
+                    self.log.info(<span class="string">"Tried to create a new access token: %s\n"</span> % params[<span class="string">'access_token'</span>])
+                <span class="keyword">except</span>:
+                    <span class="keyword">raise</span> Exception(<span class="string">"Couldn't refresh the access token, please provide a valid access_token or refresh_token."</span>)
+                    self.log.info(<span class="string">"Couldn't refresh the access token, please provide a valid access_token or refresh_token."</span>)
+        <span class="keyword">if</span> opts.get(<span class="string">'hub_id'</span>) <span class="keyword">or</span> opts.get(<span class="string">'portal_id'</span>):
+            params[<span class="string">'portalId'</span>] = opts.get(<span class="string">'hub_id'</span>) <span class="keyword">or</span> opts.get(<span class="string">'portal_id'</span>)
+        <span class="keyword">if</span> query == <span class="built_in">None</span>:
+            query = <span class="string">''</span>
+        <span class="keyword">if</span> query <span class="keyword">and</span> query.startswith(<span class="string">'?'</span>):
+            query = query[<span class="number">1</span>:]
+        <span class="keyword">if</span> query <span class="keyword">and</span> <span class="keyword">not</span> query.startswith(<span class="string">'&amp;'</span>):
+            query = <span class="string">'&amp;'</span> + query
+        url = opts.get(<span class="string">'url'</span>) <span class="keyword">or</span> <span class="string">'/%s?%s%s'</span> % (self._get_path(subpath), urllib.urlencode(params, doseq), query)
+        headers = opts.get(<span class="string">'headers'</span>) <span class="keyword">or</span> {}
+        headers.update({
+            <span class="string">'Accept-Encoding'</span>: <span class="string">'gzip'</span>, 
+            <span class="string">'Content-Type'</span>: opts.get(<span class="string">'content_type'</span>) <span class="keyword">or</span> <span class="string">'application/json'</span>})
+        
+        <span class="keyword">if</span> data <span class="keyword">and</span> <span class="keyword">not</span> isinstance(data, basestring) <span class="keyword">and</span> headers[<span class="string">'Content-Type'</span>]==<span class="string">'application/json'</span>:
+            data = json.dumps(data)
+        
+        <span class="keyword">return</span> url, headers, data
+
+    <span class="function"><span class="keyword">def</span> <span class="title">_create_request</span><span class="params">(self, conn, method, url, headers, data)</span>:</span>
+        conn.request(method, url, data, headers)
+        params = {<span class="string">'method'</span>:method, <span class="string">'url'</span>:url, <span class="string">'data'</span>:data, <span class="string">'headers'</span>:headers, <span class="string">'host'</span>:conn.host}
+        <span class="keyword">if</span> <span class="keyword">not</span> _PYTHON25:
+            params[<span class="string">'timeout'</span>] = conn.timeout
+        <span class="keyword">return</span> params
+
+    <span class="function"><span class="keyword">def</span> <span class="title">_gunzip_body</span><span class="params">(self, body)</span>:</span>
+        sio = StringIO.StringIO(body)
+        gf = gzip.GzipFile(fileobj=sio, mode=<span class="string">"rb"</span>)
+        <span class="keyword">return</span> gf.read()
+
+    <span class="function"><span class="keyword">def</span> <span class="title">_process_body</span><span class="params">(self, data, gzipped)</span>:</span>
+        <span class="keyword">if</span> gzipped:
+            <span class="keyword">return</span> self._gunzip_body(data)
+        <span class="keyword">return</span> data
+
+    <span class="function"><span class="keyword">def</span> <span class="title">_execute_request_raw</span><span class="params">(self, conn, request)</span>:</span>
+        <span class="keyword">try</span>:
+            result = conn.getresponse()
+        <span class="keyword">except</span>:
+            <span class="keyword">raise</span> HapiTimeout(<span class="built_in">None</span>, request, traceback.format_exc())
+
+        encoding = [i[<span class="number">1</span>] <span class="keyword">for</span> i <span class="keyword">in</span> result.getheaders() <span class="keyword">if</span> i[<span class="number">0</span>] == <span class="string">'content-encoding'</span>]
+        result.body = self._process_body(result.read(), len(encoding) <span class="keyword">and</span> encoding[<span class="number">0</span>] == <span class="string">'gzip'</span>)
+
+        conn.close()
+        <span class="keyword">if</span> result.status <span class="keyword">in</span> (<span class="number">404</span>, <span class="number">410</span>):
+            <span class="keyword">raise</span> HapiNotFound(result, request)
+        <span class="keyword">elif</span> result.status &gt;= <span class="number">400</span> <span class="keyword">and</span> result.status &lt; <span class="number">500</span> <span class="keyword">or</span> result.status == <span class="number">501</span>:
+            <span class="keyword">raise</span> HapiBadRequest(result, request)
+        <span class="keyword">elif</span> result.status &gt;= <span class="number">500</span>:
+            <span class="keyword">raise</span> HapiServerError(result, request)
+
+        <span class="keyword">return</span> result
+
+    <span class="function"><span class="keyword">def</span> <span class="title">_execute_request</span><span class="params">(self, conn, request)</span>:</span>
+        result = self._execute_request_raw(conn, request)
+        <span class="keyword">return</span> result.body
+
+    <span class="function"><span class="keyword">def</span> <span class="title">_digest_result</span><span class="params">(self, data)</span>:</span>
+        <span class="keyword">if</span> data <span class="keyword">and</span> isinstance(data, basestring):
+            <span class="keyword">try</span>:
+                data = json.loads(data)
+            <span class="keyword">except</span> ValueError:
+                <span class="keyword">pass</span>
+
+        <span class="keyword">return</span> data
+
+    <span class="function"><span class="keyword">def</span> <span class="title">_call_raw</span><span class="params">(self, subpath, params=None, method=<span class="string">'GET'</span>, data=None, doseq=False, query=<span class="string">''</span>, **options)</span>:</span>
+        opts = self.options.copy()
+        opts.update(options)
+        url, headers, data = self._prepare_request(subpath, params, data, opts, doseq, query)
+        kwargs = {}
+        <span class="keyword">if</span> <span class="keyword">not</span> _PYTHON25:
+            kwargs[<span class="string">'timeout'</span>] = opts[<span class="string">'timeout'</span>]
+
+        num_retries = opts.get(<span class="string">'number_retries'</span>, <span class="number">0</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Never retry a POST, PUT, or DELETE unless explicitly told to</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="keyword">if</span> method != <span class="string">'GET'</span> <span class="keyword">and</span> <span class="keyword">not</span> opts.get(<span class="string">'retry_on_post'</span>):
+            num_retries = <span class="number">0</span>
+        <span class="keyword">if</span> num_retries &gt; <span class="number">6</span>:
+            num_retries = <span class="number">6</span>
+        emergency_brake = <span class="number">10</span>
+        try_count = <span class="number">0</span>
+        <span class="keyword">while</span> <span class="built_in">True</span>:
+            emergency_brake -= <span class="number">1</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>avoid getting burned by any mistakes in While loop logic</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="keyword">if</span> emergency_brake &lt; <span class="number">1</span>:
+                <span class="keyword">break</span>
+            <span class="keyword">try</span>:
+                try_count += <span class="number">1</span>
+                connection = opts[<span class="string">'connection_type'</span>](opts[<span class="string">'api_base'</span>], **kwargs)
+                request_info = self._create_request(connection, method, url, headers, data)
+                result = self._execute_request_raw(connection, request_info)
+                <span class="keyword">break</span>
+            <span class="keyword">except</span> HapiError, e:
+                <span class="keyword">if</span> try_count &gt; num_retries:
+                    logging.warning(<span class="string">"Too many retries for %s"</span>, url)
+                    <span class="keyword">raise</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Don&#39;t retry errors from 300 to 499</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                <span class="keyword">if</span> e.result <span class="keyword">and</span> e.result.status &gt;= <span class="number">300</span> <span class="keyword">and</span> e.result.status &lt; <span class="number">500</span>:
+                    <span class="keyword">raise</span>
+                logging.warning(<span class="string">'HapiError %s calling %s, retrying'</span> % (e, url))</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>exponential back off - wait 0 seconds, 1 second, 3 seconds, 7 seconds, 15 seconds, etc.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            time.sleep((pow(<span class="number">2</span>, try_count - <span class="number">1</span>) - <span class="number">1</span>) * self.sleep_multiplier)
+        <span class="keyword">return</span> result
+
+    <span class="function"><span class="keyword">def</span> <span class="title">_call</span><span class="params">(self, subpath, params=None, method=<span class="string">'GET'</span>, data=None, doseq=False, query=<span class="string">''</span>, **options)</span>:</span>
+        result = self._call_raw(subpath, params=params, method=method, data=data, doseq=doseq, query=query, **options)
+        <span class="keyword">return</span> self._digest_result(result.body)</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

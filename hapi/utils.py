@@ -17,7 +17,7 @@ def get_log(name):
 def auth_checker(access_token):
     # Do a simple api request using the access token
     connection = httplib.HTTPSConnection('api.hubapi.com')
-    connection.request('GET', '/events/v1/events?max=1&access_token=%s' % access_token)
+    connection.request('GET', '/contacts/v1/lists/all/contacts/all?count=1&offset=0&access_token=%s' % access_token)
     result = connection.getresponse()
     return result.status
 

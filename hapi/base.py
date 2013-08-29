@@ -173,9 +173,9 @@ class BaseClient(object):
                         decoded = json.loads(token_response)
                         self.access_token = decoded['access_token']
                         self.log.info('Retrying with new token %' % (self.access_token))
-                    except:
-                        self.log.error("Unable to refresh access_token")
-                        raise Exception("Unable to refresh access token")
+                    except Exception, e:
+                        self.log.error("Unable to refresh access_token: %s" % (e))
+                        raise
                     return self._call_raw(subpath, params=params, method=method, data=data, doseq=doseq, query=query, retried=True, **options)
                 else:
                     if self.access_token and self.refresh_token and self.client_id and retried:

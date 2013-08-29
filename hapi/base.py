@@ -9,7 +9,7 @@ import traceback
 import gzip
 import StringIO
 
-from error import HapiError, HapiBadRequest, HapiNotFound, HapiTimeout, HapiServerError
+from error import HapiError, HapiBadRequest, HapiNotFound, HapiTimeout, HapiServerError, HapiUnauthorized
 
 
 _PYTHON25 = sys.version_info < (2, 6)
@@ -28,7 +28,7 @@ class BaseClient(object):
         for mixin_class in mixins:
             if mixin_class not in self.__class__.__bases__:
                 self.__class__.__bases__ = (mixin_class,) + self.__class__.__bases__
-        
+
         self.api_key = api_key or extra_options.get('api_key')
         self.access_token = access_token or extra_options.get('access_token')
         self.refresh_token = refresh_token or extra_options.get('refresh_token')
@@ -60,17 +60,13 @@ class BaseClient(object):
         if self.api_key:
             params['hapikey'] = params.get('hapikey') or self.api_key
         else:
-            params['access_token'] = params.get('access_token') or self.access_token
-            check = utils.auth_checker(params['access_token'])
-            if check >= 400:
-                try:
-                    token_response = utils.refresh_access_token(self.refresh_token, self.client_id)
-                    decoded = json.loads(token_response)
-                    params['access_token'] = decoded['access_token']
-                    self.log.info("Tried to create a new access token: %s\n" % params['access_token'])
-                except:
-                    raise Exception("Couldn't refresh the access token, please provide a valid access_token or refresh_token.")
-                    self.log.info("Couldn't refresh the access token, please provide a valid access_token or refresh_token.")
+            # Be sure that we're consistent about what access_token is being used
+            # If one was provided at instantiation, that is always used.  If it was not
+            # but one was provided as part of the method invocation, we persist it
+            if params.get('access_token') and not self.access_token:
+                self.access_token = params.get('access_token')
+            params['access_token'] = self.access_token
+
         if opts.get('hub_id') or opts.get('portal_id'):
             params['portalId'] = opts.get('hub_id') or opts.get('portal_id')
         if query == None:
@@ -82,12 +78,12 @@ class BaseClient(object):
         url = opts.get('url') or '/%s?%s%s' % (self._get_path(subpath), urllib.urlencode(params, doseq), query)
         headers = opts.get('headers') or {}
         headers.update({
-            'Accept-Encoding': 'gzip', 
+            'Accept-Encoding': 'gzip',
             'Content-Type': opts.get('content_type') or 'application/json'})
-        
+
         if data and not isinstance(data, basestring) and headers['Content-Type']=='application/json':
             data = json.dumps(data)
-        
+
         return url, headers, data
 
     def _create_request(self, conn, method, url, headers, data):
@@ -119,6 +115,8 @@ class BaseClient(object):
         conn.close()
         if result.status in (404, 410):
             raise HapiNotFound(result, request)
+        elif result.status == 401:
+            raise HapiUnauthorized(result, request)
         elif result.status >= 400 and result.status < 500 or result.status == 501:
             raise HapiBadRequest(result, request)
         elif result.status >= 500:
@@ -139,7 +137,7 @@ class BaseClient(object):
 
         return data
 
-    def _call_raw(self, subpath, params=None, method='GET', data=None, doseq=False, query='', **options):
+    def _call_raw(self, subpath, params=None, method='GET', data=None, doseq=False, query='', retried=False, **options):
         opts = self.options.copy()
         opts.update(options)
         url, headers, data = self._prepare_request(subpath, params, data, opts, doseq, query)
@@ -166,6 +164,27 @@ class BaseClient(object):
                 request_info = self._create_request(connection, method, url, headers, data)
                 result = self._execute_request_raw(connection, request_info)
                 break
+            except HapiUnauthorized, e:
+                self.log.warning("401 Unauthorized response to API request.")
+                if self.access_token and self.refresh_token and self.client_id and not retried:
+                    self.log.info("Refreshing access token")
+                    try:
+                        token_response = utils.refresh_access_token(self.refresh_token, self.client_id)
+                        decoded = json.loads(token_response)
+                        self.access_token = decoded['access_token']
+                        self.log.info('Retrying with new token %' % (self.access_token))
+                    except Exception, e:
+                        self.log.error("Unable to refresh access_token: %s" % (e))
+                        raise
+                    return self._call_raw(subpath, params=params, method=method, data=data, doseq=doseq, query=query, retried=True, **options)
+                else:
+                    if self.access_token and self.refresh_token and self.client_id and retried:
+                        self.log.error("Refreshed token, but request still was not authorized.  You may need to grant additional permissions.")
+                    elif self.access_token and not self.refresh_token:
+                        self.log.error("In order to enable automated refreshing of your access token, please provide a refresh token as well.")
+                    elif self.access_token and not self.client_id:
+                        self.log.error("In order to enable automated refreshing of your access token, please provide a client_id in addition to a refresh token.")
+                    raise
             except HapiError, e:
                 if try_count > num_retries:
                     logging.warning("Too many retries for %s", url)
@@ -173,11 +192,11 @@ class BaseClient(object):
                 # Don't retry errors from 300 to 499
                 if e.result and e.result.status >= 300 and e.result.status < 500:
                     raise
-                logging.warning('HapiError %s calling %s, retrying' % (e, url))
+                self.log.warning('HapiError %s calling %s, retrying' % (e, url))
             # exponential back off - wait 0 seconds, 1 second, 3 seconds, 7 seconds, 15 seconds, etc.
             time.sleep((pow(2, try_count - 1) - 1) * self.sleep_multiplier)
         return result
 
     def _call(self, subpath, params=None, method='GET', data=None, doseq=False, query='', **options):
-        result = self._call_raw(subpath, params=params, method=method, data=data, doseq=doseq, query=query, **options)
+        result = self._call_raw(subpath, params=params, method=method, data=data, doseq=doseq, query=query, retried=False, **options)
         return self._digest_result(result.body)

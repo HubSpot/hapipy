@@ -138,7 +138,7 @@
             </div>
             
             <div class="content"><div class='highlight'><pre>    connection = httplib.HTTPSConnection(<span class="string">'api.hubapi.com'</span>)
-    connection.request(<span class="string">'GET'</span>, <span class="string">'/events/v1/events?max=1&amp;access_token=%s'</span> % access_token)
+    connection.request(<span class="string">'GET'</span>, <span class="string">'/contacts/v1/lists/all/contacts/all?count=1&amp;offset=0&amp;access_token=%s'</span> % access_token)
     result = connection.getresponse()
     <span class="keyword">return</span> result.status
 

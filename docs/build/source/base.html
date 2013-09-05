@@ -117,7 +117,7 @@
 <span class="keyword">import</span> gzip
 <span class="keyword">import</span> StringIO
 
-<span class="keyword">from</span> error <span class="keyword">import</span> HapiError, HapiBadRequest, HapiNotFound, HapiTimeout, HapiServerError
+<span class="keyword">from</span> error <span class="keyword">import</span> HapiError, HapiBadRequest, HapiNotFound, HapiTimeout, HapiServerError, HapiUnauthorized
 
 
 _PYTHON25 = sys.version_info &lt; (<span class="number">2</span>, <span class="number">6</span>)
@@ -161,7 +161,7 @@ so tests run faster</p>
         <span class="keyword">for</span> mixin_class <span class="keyword">in</span> mixins:
             <span class="keyword">if</span> mixin_class <span class="keyword">not</span> <span class="keyword">in</span> self.__class__.__bases__:
                 self.__class__.__bases__ = (mixin_class,) + self.__class__.__bases__
-        
+
         self.api_key = api_key <span class="keyword">or</span> extra_options.get(<span class="string">'api_key'</span>)
         self.access_token = access_token <span class="keyword">or</span> extra_options.get(<span class="string">'access_token'</span>)
         self.refresh_token = refresh_token <span class="keyword">or</span> extra_options.get(<span class="string">'refresh_token'</span>)
@@ -192,18 +192,27 @@ so tests run faster</p>
         params = params <span class="keyword">or</span> {}
         <span class="keyword">if</span> self.api_key:
             params[<span class="string">'hapikey'</span>] = params.get(<span class="string">'hapikey'</span>) <span class="keyword">or</span> self.api_key
-        <span class="keyword">else</span>:
-            params[<span class="string">'access_token'</span>] = params.get(<span class="string">'access_token'</span>) <span class="keyword">or</span> self.access_token
-            check = utils.auth_checker(params[<span class="string">'access_token'</span>])
-            <span class="keyword">if</span> check &gt;= <span class="number">400</span>:
-                <span class="keyword">try</span>:
-                    token_response = utils.refresh_access_token(self.refresh_token, self.client_id)
-                    decoded = json.loads(token_response)
-                    params[<span class="string">'access_token'</span>] = decoded[<span class="string">'access_token'</span>]
-                    self.log.info(<span class="string">"Tried to create a new access token: %s\n"</span> % params[<span class="string">'access_token'</span>])
-                <span class="keyword">except</span>:
-                    <span class="keyword">raise</span> Exception(<span class="string">"Couldn't refresh the access token, please provide a valid access_token or refresh_token."</span>)
-                    self.log.info(<span class="string">"Couldn't refresh the access token, please provide a valid access_token or refresh_token."</span>)
+        <span class="keyword">else</span>:</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Be sure that we&#39;re consistent about what access_token is being used
+If one was provided at instantiation, that is always used.  If it was not
+but one was provided as part of the method invocation, we persist it</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="keyword">if</span> params.get(<span class="string">'access_token'</span>) <span class="keyword">and</span> <span class="keyword">not</span> self.access_token:
+                self.access_token = params.get(<span class="string">'access_token'</span>)
+            params[<span class="string">'access_token'</span>] = self.access_token
+
         <span class="keyword">if</span> opts.get(<span class="string">'hub_id'</span>) <span class="keyword">or</span> opts.get(<span class="string">'portal_id'</span>):
             params[<span class="string">'portalId'</span>] = opts.get(<span class="string">'hub_id'</span>) <span class="keyword">or</span> opts.get(<span class="string">'portal_id'</span>)
         <span class="keyword">if</span> query == <span class="built_in">None</span>:
@@ -215,12 +224,12 @@ so tests run faster</p>
         url = opts.get(<span class="string">'url'</span>) <span class="keyword">or</span> <span class="string">'/%s?%s%s'</span> % (self._get_path(subpath), urllib.urlencode(params, doseq), query)
         headers = opts.get(<span class="string">'headers'</span>) <span class="keyword">or</span> {}
         headers.update({
-            <span class="string">'Accept-Encoding'</span>: <span class="string">'gzip'</span>, 
+            <span class="string">'Accept-Encoding'</span>: <span class="string">'gzip'</span>,
             <span class="string">'Content-Type'</span>: opts.get(<span class="string">'content_type'</span>) <span class="keyword">or</span> <span class="string">'application/json'</span>})
-        
+
         <span class="keyword">if</span> data <span class="keyword">and</span> <span class="keyword">not</span> isinstance(data, basestring) <span class="keyword">and</span> headers[<span class="string">'Content-Type'</span>]==<span class="string">'application/json'</span>:
             data = json.dumps(data)
-        
+
         <span class="keyword">return</span> url, headers, data
 
     <span class="function"><span class="keyword">def</span> <span class="title">_create_request</span><span class="params">(self, conn, method, url, headers, data)</span>:</span>
@@ -252,6 +261,8 @@ so tests run faster</p>
         conn.close()
         <span class="keyword">if</span> result.status <span class="keyword">in</span> (<span class="number">404</span>, <span class="number">410</span>):
             <span class="keyword">raise</span> HapiNotFound(result, request)
+        <span class="keyword">elif</span> result.status == <span class="number">401</span>:
+            <span class="keyword">raise</span> HapiUnauthorized(result, request)
         <span class="keyword">elif</span> result.status &gt;= <span class="number">400</span> <span class="keyword">and</span> result.status &lt; <span class="number">500</span> <span class="keyword">or</span> result.status == <span class="number">501</span>:
             <span class="keyword">raise</span> HapiBadRequest(result, request)
         <span class="keyword">elif</span> result.status &gt;= <span class="number">500</span>:
@@ -272,7 +283,7 @@ so tests run faster</p>
 
         <span class="keyword">return</span> data
 
-    <span class="function"><span class="keyword">def</span> <span class="title">_call_raw</span><span class="params">(self, subpath, params=None, method=<span class="string">'GET'</span>, data=None, doseq=False, query=<span class="string">''</span>, **options)</span>:</span>
+    <span class="function"><span class="keyword">def</span> <span class="title">_call_raw</span><span class="params">(self, subpath, params=None, method=<span class="string">'GET'</span>, data=None, doseq=False, query=<span class="string">''</span>, retried=False, **options)</span>:</span>
         opts = self.options.copy()
         opts.update(options)
         url, headers, data = self._prepare_request(subpath, params, data, opts, doseq, query)
@@ -285,11 +296,11 @@ so tests run faster</p>
         </li>
         
         
-        <li id="section-4">
+        <li id="section-5">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-4">&#182;</a>
+                <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
               <p>Never retry a POST, PUT, or DELETE unless explicitly told to</p>
 
@@ -307,11 +318,11 @@ so tests run faster</p>
         </li>
         
         
-        <li id="section-5">
+        <li id="section-6">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-5">&#182;</a>
+                <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
               <p>avoid getting burned by any mistakes in While loop logic</p>
 
@@ -325,27 +336,31 @@ so tests run faster</p>
                 request_info = self._create_request(connection, method, url, headers, data)
                 result = self._execute_request_raw(connection, request_info)
                 <span class="keyword">break</span>
+            <span class="keyword">except</span> HapiUnauthorized, e:
+                self.log.warning(<span class="string">"401 Unauthorized response to API request."</span>)
+                <span class="keyword">if</span> self.access_token <span class="keyword">and</span> self.refresh_token <span class="keyword">and</span> self.client_id <span class="keyword">and</span> <span class="keyword">not</span> retried:
+                    self.log.info(<span class="string">"Refreshing access token"</span>)
+                    <span class="keyword">try</span>:
+                        token_response = utils.refresh_access_token(self.refresh_token, self.client_id)
+                        decoded = json.loads(token_response)
+                        self.access_token = decoded[<span class="string">'access_token'</span>]
+                        self.log.info(<span class="string">'Retrying with new token %'</span> % (self.access_token))
+                    <span class="keyword">except</span> Exception, e:
+                        self.log.error(<span class="string">"Unable to refresh access_token: %s"</span> % (e))
+                        <span class="keyword">raise</span>
+                    <span class="keyword">return</span> self._call_raw(subpath, params=params, method=method, data=data, doseq=doseq, query=query, retried=<span class="built_in">True</span>, **options)
+                <span class="keyword">else</span>:
+                    <span class="keyword">if</span> self.access_token <span class="keyword">and</span> self.refresh_token <span class="keyword">and</span> self.client_id <span class="keyword">and</span> retried:
+                        self.log.error(<span class="string">"Refreshed token, but request still was not authorized.  You may need to grant additional permissions."</span>)
+                    <span class="keyword">elif</span> self.access_token <span class="keyword">and</span> <span class="keyword">not</span> self.refresh_token:
+                        self.log.error(<span class="string">"In order to enable automated refreshing of your access token, please provide a refresh token as well."</span>)
+                    <span class="keyword">elif</span> self.access_token <span class="keyword">and</span> <span class="keyword">not</span> self.client_id:
+                        self.log.error(<span class="string">"In order to enable automated refreshing of your access token, please provide a client_id in addition to a refresh token."</span>)
+                    <span class="keyword">raise</span>
             <span class="keyword">except</span> HapiError, e:
                 <span class="keyword">if</span> try_count &gt; num_retries:
                     logging.warning(<span class="string">"Too many retries for %s"</span>, url)
                     <span class="keyword">raise</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-6">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-6">&#182;</a>
-              </div>
-              <p>Don&#39;t retry errors from 300 to 499</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>                <span class="keyword">if</span> e.result <span class="keyword">and</span> e.result.status &gt;= <span class="number">300</span> <span class="keyword">and</span> e.result.status &lt; <span class="number">500</span>:
-                    <span class="keyword">raise</span>
-                logging.warning(<span class="string">'HapiError %s calling %s, retrying'</span> % (e, url))</pre></div></div>
             
         </li>
         
@@ -356,6 +371,23 @@ so tests run faster</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
+              <p>Don&#39;t retry errors from 300 to 499</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                <span class="keyword">if</span> e.result <span class="keyword">and</span> e.result.status &gt;= <span class="number">300</span> <span class="keyword">and</span> e.result.status &lt; <span class="number">500</span>:
+                    <span class="keyword">raise</span>
+                self.log.warning(<span class="string">'HapiError %s calling %s, retrying'</span> % (e, url))</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
               <p>exponential back off - wait 0 seconds, 1 second, 3 seconds, 7 seconds, 15 seconds, etc.</p>
 
             </div>
@@ -364,7 +396,7 @@ so tests run faster</p>
         <span class="keyword">return</span> result
 
     <span class="function"><span class="keyword">def</span> <span class="title">_call</span><span class="params">(self, subpath, params=None, method=<span class="string">'GET'</span>, data=None, doseq=False, query=<span class="string">''</span>, **options)</span>:</span>
-        result = self._call_raw(subpath, params=params, method=method, data=data, doseq=doseq, query=query, **options)
+        result = self._call_raw(subpath, params=params, method=method, data=data, doseq=doseq, query=query, retried=<span class="built_in">False</span>, **options)
         <span class="keyword">return</span> self._digest_result(result.body)</pre></div></div>
             
         </li>

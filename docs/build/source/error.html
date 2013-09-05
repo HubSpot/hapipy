@@ -108,7 +108,7 @@
             
             <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">EmptyResult</span><span class="params">(object)</span>:</span>
     <span class="string">'''
-    Null Object pattern to prevent Null reference errors 
+    Null Object pattern to prevent Null reference errors
     when there is no result
     '''</span>
     <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span>
@@ -175,7 +175,7 @@
             params[key] = self.request.get(key)
         <span class="keyword">for</span> attr <span class="keyword">in</span> result_attrs:
             params[<span class="string">'result_%s'</span> % attr] = getattr(self.result, attr, <span class="string">''</span>)
-        
+
         params = self._dict_vals_to_unicode(params)
         <span class="keyword">return</span> self.as_str_template.format(**params)
 
@@ -211,6 +211,9 @@
 
 <span class="class"><span class="keyword">class</span> <span class="title">HapiTimeout</span><span class="params">(HapiError)</span>:</span>
     <span class="string">'''Wrapper for socket timeouts, sslerror, and 504'''</span>
+
+<span class="class"><span class="keyword">class</span> <span class="title">HapiUnauthorized</span><span class="params">(HapiError)</span>:</span>
+    <span class="string">'''Wrapper for 401 Unauthorized errors'''</span>
 
 <span class="class"><span class="keyword">class</span> <span class="title">HapiServerError</span><span class="params">(HapiError)</span>:</span>
     <span class="string">'''Wrapper for most 500 errors'''</span></pre></div></div>

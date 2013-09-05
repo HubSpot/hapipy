@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>nurturing.py</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="__init__.html">
+                __init__.py
+              </a>
+            
+              
+              <a class="source" href="base.html">
+                base.py
+              </a>
+            
+              
+              <a class="source" href="blog.html">
+                blog.py
+              </a>
+            
+              
+              <a class="source" href="broadcast.html">
+                broadcast.py
+              </a>
+            
+              
+              <a class="source" href="error.html">
+                error.py
+              </a>
+            
+              
+              <a class="source" href="forms.html">
+                forms.py
+              </a>
+            
+              
+              <a class="source" href="keywords.html">
+                keywords.py
+              </a>
+            
+              
+              <a class="source" href="leads.html">
+                leads.py
+              </a>
+            
+              
+              <a class="source" href="logging_helper.html">
+                logging_helper.py
+              </a>
+            
+              
+              <a class="source" href="nurturing.html">
+                nurturing.py
+              </a>
+            
+              
+              <a class="source" href="prospects.html">
+                prospects.py
+              </a>
+            
+              
+              <a class="source" href="settings.html">
+                settings.py
+              </a>
+            
+              
+              <a class="source" href="utils.html">
+                utils.py
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>nurturing.py</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="keyword">from</span> base <span class="keyword">import</span> BaseClient
+
+NURTURING_API_VERSION = <span class="string">'1'</span>
+
+<span class="class"><span class="keyword">class</span> <span class="title">NurturingClient</span><span class="params">(BaseClient)</span>:</span>
+  
+    <span class="function"><span class="keyword">def</span> <span class="title">_get_path</span><span class="params">(self, subpath)</span>:</span>
+        <span class="keyword">return</span> <span class="string">'nurture/v%s/%s'</span> % (NURTURING_API_VERSION, subpath)
+    
+    <span class="function"><span class="keyword">def</span> <span class="title">get_campaigns</span><span class="params">(self, **options)</span>:</span>
+        <span class="keyword">return</span> self._call(<span class="string">'campaigns'</span>, **options)
+    
+    <span class="function"><span class="keyword">def</span> <span class="title">get_leads</span><span class="params">(self, campaign_guid, **options)</span>:</span>
+        <span class="keyword">return</span> self._call(<span class="string">'campaign/%s/list'</span> % campaign_guid, **options)
+    
+    <span class="function"><span class="keyword">def</span> <span class="title">get_history</span><span class="params">(self, lead_guid, **options)</span>:</span>
+        <span class="keyword">return</span> self._call(<span class="string">'lead/%s'</span> % lead_guid, **options)
+    
+    <span class="function"><span class="keyword">def</span> <span class="title">enroll_lead</span><span class="params">(self, campaign_guid, lead_guid, **options)</span>:</span>
+        <span class="keyword">return</span> self._call(<span class="string">'campaign/%s/add'</span> % campaign_guid, data=lead_guid, method=<span class="string">'POST'</span>, **options)
+    
+    <span class="function"><span class="keyword">def</span> <span class="title">unenroll_lead</span><span class="params">(self, campaign_guid, lead_guid, **options)</span>:</span>
+        <span class="keyword">return</span> self._call(<span class="string">'campaign/%s/remove'</span> % campaign_guid, data=lead_guid, method=<span class="string">'POST'</span>, **options)</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

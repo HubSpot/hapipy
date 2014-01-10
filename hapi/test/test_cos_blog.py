@@ -73,6 +73,21 @@ class BlogClientTest(unittest2.TestCase):
         post = self.client.delete_post(blog_post_id=348109414)
         pprint(post)
         self.assertTrue(post)
+        post = self.client.undelete_post(blog_post_id=348109414)
+        pprint(post)
+        self.assertTrue(post)
+
+    @attr('api')
+    def test_undelete_post(self):
+        post = self.client.undelete_post(blog_post_id=348109414)
+        pprint(post)
+        self.assertTrue(post)
+
+    @attr('api')
+    def test_get_post(self):
+        post = self.client.get_post(blog_post_id=348109414)
+        pprint(post)
+        self.assertTrue(post)
 
 if __name__ == "__main__":
     unittest2.main()

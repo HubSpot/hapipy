@@ -61,14 +61,17 @@ class COSBlogClient(BaseClient):
     def delete_post(self, blog_post_id, **options):
         return self._call('blog-posts/%s' % blog_post_id, method='DELETE', **options)
 
-    # Get Blog Post by ID
+    def get_post(self, blog_post_id, **options):
+        return self._call('blog-posts/%s' % blog_post_id, **options)
+
     # Update Auto-Save Buffer
     # Get Auto-Save Buffer
     # Clone Blog Post
     # Has Auto-Save Buffered Changes
     # Publish/Unpublish Blog Post
     # Push Auto-Save Buffer to Live
-    # Undelete Blog Post
+    def undelete_post(self, blog_post_id, **options):
+        return self._call('blog-posts/%s/restore-deleted' % blog_post_id, method='POST', **options)
     # Validate Auto-Save Buffer Version
     # List Previous Versions of Blog Post
     # Restore Previous Version of Blog Post

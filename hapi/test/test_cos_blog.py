@@ -23,6 +23,7 @@ class BlogClientTest(unittest2.TestCase):
     def tearDown(self):
         pass
     
+    # Blogs
     @attr('api')
     def test_get_blogs(self):
         blogs = self.client.get_blogs()
@@ -47,6 +48,19 @@ class BlogClientTest(unittest2.TestCase):
         version = self.client.get_blog_version(self.BLOG_ID, self.VERSION_ID)
         self.assertTrue(version)
         pprint(version)
+
+    # Blog Posts
+    @attr('api')
+    def test_create_post(self):
+        post = self.client.create_post(content_group_id=self.BLOG_ID, name="Test Blog Post")
+        pprint(post)
+        self.assertTrue(post)
+
+    @attr('api')
+    def test_get_posts(self):
+        posts = self.client.get_posts(query={'name': 'Demonstration Blog Post'})
+        pprint(posts)
+        self.assertTrue(posts)
 
 if __name__ == "__main__":
     unittest2.main()

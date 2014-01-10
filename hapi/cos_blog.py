@@ -99,8 +99,11 @@ class COSBlogClient(BaseClient):
 
     def undelete_post(self, blog_post_id, **options):
         return self._call('blog-posts/%s/restore-deleted' % blog_post_id, method='POST', **options)
-    # Validate Auto-Save Buffer Version
+
+    def validate_buffer(self, blog_post_id, **options):
+        return self._call('blog-posts/%s/validate-buffer' % blog_post_id, method='POST', **options)
     # List Previous Versions of Blog Post
+    # Get Previous Version of Blog Post
     # Restore Previous Version of Blog Post
 
     # Blog Authors

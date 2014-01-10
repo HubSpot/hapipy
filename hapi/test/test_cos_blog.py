@@ -135,5 +135,11 @@ class BlogClientTest(unittest2.TestCase):
         pprint(post)
         self.assertTrue(post)
 
+    @attr('api')
+    def test_validate_buffer(self):
+        post = self.client.validate_buffer(blog_post_id=348109414)
+        pprint(post)
+        self.assertTrue(post)
+
 if __name__ == "__main__":
     unittest2.main()

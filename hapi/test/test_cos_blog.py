@@ -5,6 +5,7 @@ import logger
 from pprint import pprint
 import simplejson as json
 from nose.plugins.attrib import attr
+from datetime import datetime
 
 from hapi.cos_blog import COSBlogClient
 
@@ -158,11 +159,16 @@ class BlogClientTest(unittest2.TestCase):
 
     @attr('api')
     def test_create_delete_author(self):
-        response = self.client.create_author(email='test@example.com', full_name="Another Test Author 3")
+        full_name = "Test Author " + datetime.now().strftime('%Y%m%d%H%M%S')
+        response = self.client.create_author(email='test@example.com', full_name=full_name)
         pprint(response)
         self.assertTrue(response)
 
         author_id = response['id']
+
+        response = self.client.update_author(author_id=author_id, email="new-email@example.com")
+        pprint(response)
+        self.assertTrue(response)
 
         response = self.client.delete_author(author_id=author_id)
         pprint(response)
@@ -178,9 +184,50 @@ class BlogClientTest(unittest2.TestCase):
 
     @attr('api')
     def test_get_authors(self):
-        authors = self.client.get_authors(query={'full_name': 'Hub Spot'})
-        pprint(authors)
-        self.assertTrue(authors)
+        response = self.client.get_authors(query={'full_name': 'Hub Spot'})
+        pprint(response)
+        self.assertTrue(response)
+
+        author = self.client.get_author(author_id=response['objects'][0]['id'])
+        pprint(author)
+        self.assertTrue(author)
+
+    @attr('api')
+    def test_get_topics(self):
+        response = self.client.get_topics()
+        pprint(response)
+        self.assertTrue(response)
+
+        topic_id = response['objects'][0]['id']
+        response = self.client.get_topic(topic_id=topic_id)
+        pprint(response)
+        self.assertTrue(response)
+
+    @attr('api')
+    def test_create_update_delete_undelete_topic(self):
+        name = "Test Topic " + datetime.now().strftime('%Y%m%d%H%M%S')
+        response = self.client.create_topic(name=name, slug='test-topic')
+        pprint(response)
+        self.assertTrue(response)
+
+        topic_id = response['id']
+
+        name = "New " + name
+        response = self.client.update_topic(topic_id=topic_id, name=name)
+        pprint(response)
+        self.assertTrue(response)
+
+        response = self.client.delete_topic(topic_id=topic_id)
+        pprint(response)
+        self.assertTrue(response)
+
+        response = self.client.undelete_topic(topic_id=topic_id)
+        pprint(response)
+        self.assertTrue(response)
+
+        response = self.client.delete_topic(topic_id=topic_id)
+        pprint(response)
+        self.assertTrue(response)
 
 if __name__ == "__main__":
     unittest2.main()

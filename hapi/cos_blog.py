@@ -153,7 +153,7 @@ class COSBlogClient(BaseClient):
 
     def update_author(self, author_id, email=None, full_name=None, user_id=None, username=None, **options):
         '''https://developers.hubspot.com/docs/methods/blogv2/put_blog_authors_blog_author_id'''
-        data = cls._args_to_dict(('email', 'full_name', 'user_id', 'username'), **locals())
+        data = self._args_to_dict(('email', 'full_name', 'user_id', 'username'), **locals())
         return self._call('blog-authors/%s' % author_id, data=json.dumps(data),
                           method='PUT', content_type='application/json', **options)
 
@@ -170,10 +170,30 @@ class COSBlogClient(BaseClient):
         return self._call('blog-authors/%s/restore-deleted' % author_id, method='POST', **options)
 
     # Topics
-    # ------
-    # Create Topic
-    # List Topics
-    # Update Topic
-    # Delete Topic
-    # Get Topic
-    # Undelete Topic
+    def create_topic(self, name, slug, **options):
+        '''https://developers.hubspot.com/docs/methods/blogv2/post_topics'''
+        data = {'name': name, 'slug': slug}
+        return self._call('topics', data=json.dumps(data), method='POST', **options)
+
+    def get_topics(self, query={}, **options):
+        '''https://developers.hubspot.com/docs/methods/blogv2/get_topics'''
+        return self._call('topics', query=urlencode(query), **options)
+
+    def update_topic(self, topic_id, name=None, slug=None, **options):
+        '''https://developers.hubspot.com/docs/methods/blogv2/put_topics_topic_id'''
+        data = self._args_to_dict(('name', 'slug'), **locals())
+        return self._call('topics/%s' % topic_id, data=json.dumps(data),
+                          method='PUT', content_type='application/json', **options)
+
+    def delete_topic(self, topic_id, **options):
+        '''https://developers.hubspot.com/docs/methods/blogv2/delete_topics_topic_id'''
+        return self._call('topics/%s' % topic_id, method='DELETE', **options)
+
+    def get_topic(self, topic_id, **options):
+        '''https://developers.hubspot.com/docs/methods/blogv2/get_topics_topic_id'''
+        return self._call('topics/%s' % topic_id, **options)
+
+    def undelete_topic(self, topic_id, **options):
+        '''https://developers.hubspot.com/docs/methods/blogv2/post_topics_topic_id_restore_deleted'''
+        return self._call('topics/%s/restore-deleted' % topic_id, method='POST', **options)
+

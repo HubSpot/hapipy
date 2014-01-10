@@ -58,7 +58,9 @@ class COSBlogClient(BaseClient):
         return self._call('blog-posts/%s' % blog_post_id, data=json.dumps(data), method='PUT',
                           content_type='application/json',**options)
 
-    # Delete Blog Post
+    def delete_post(self, blog_post_id, **options):
+        return self._call('blog-posts/%s' % blog_post_id, method='DELETE', **options)
+
     # Get Blog Post by ID
     # Update Auto-Save Buffer
     # Get Auto-Save Buffer

@@ -68,5 +68,11 @@ class BlogClientTest(unittest2.TestCase):
         pprint(post)
         self.assertTrue(post)
 
+    @attr('api')
+    def test_delete_post(self):
+        post = self.client.delete_post(blog_post_id=348109414)
+        pprint(post)
+        self.assertTrue(post)
+
 if __name__ == "__main__":
     unittest2.main()

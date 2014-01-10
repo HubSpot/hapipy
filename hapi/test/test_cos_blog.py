@@ -107,5 +107,11 @@ class BlogClientTest(unittest2.TestCase):
         pprint(post)
         self.assertTrue(post)
 
+    @attr('api')
+    def test_get_buffered_changes(self):
+        post = self.client.get_buffered_changes(blog_post_id=348109414)
+        pprint(post)
+        self.assertTrue(post)
+
 if __name__ == "__main__":
     unittest2.main()

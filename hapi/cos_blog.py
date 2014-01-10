@@ -85,7 +85,9 @@ class COSBlogClient(BaseClient):
         return self._call('blog-posts/%s/clone' % blog_post_id, data=json.dumps(data), method='POST',
                           content_type='application/json',**options)
 
-    # Has Auto-Save Buffered Changes
+    def get_buffered_changes(self, blog_post_id, **options):
+        return self._call('blog-posts/%s/has-buffered-changes' % blog_post_id, **options)
+
     # Publish/Unpublish Blog Post
     # Push Auto-Save Buffer to Live
     def undelete_post(self, blog_post_id, **options):

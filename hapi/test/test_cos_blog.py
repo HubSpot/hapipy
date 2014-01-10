@@ -101,5 +101,11 @@ class BlogClientTest(unittest2.TestCase):
         pprint(post)
         self.assertTrue(post)
 
+    @attr('api')
+    def test_clone_post(self):
+        post = self.client.clone_post(blog_post_id=348109414, name="Cloned Blog Post")
+        pprint(post)
+        self.assertTrue(post)
+
 if __name__ == "__main__":
     unittest2.main()

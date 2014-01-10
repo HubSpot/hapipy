@@ -62,5 +62,11 @@ class BlogClientTest(unittest2.TestCase):
         pprint(posts)
         self.assertTrue(posts)
 
+    @attr('api')
+    def test_update_post(self):
+        post = self.client.update_post(blog_post_id=348109414, name="Updated Test Blog Post")
+        pprint(post)
+        self.assertTrue(post)
+
 if __name__ == "__main__":
     unittest2.main()

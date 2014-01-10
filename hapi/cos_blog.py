@@ -23,11 +23,8 @@ class COSBlogClient(BaseClient):
         return self._call('blogs/%s/versions/%s' % (blog_id, version_id), **options)
 
     # Blog Posts
-    def create_post(self, content_group_id, name, blog_author_id=None,
-                    campaign=None, campaign_name=None, footer_html=None, head_html=None,
-                    is_draft=None, meta_description=None, meta_keyworks=None,
-                    post_body=None, post_summary=None, publish_date=None,
-                    publish_immediately=None, slug=None, topic_ids=None, widgets=None, **options):
+    @staticmethod
+    def _post_data(**kwargs):
         allowed_fields = ('blog_author_id', 'campaign', 'campaign_name', 'content_group_id',
                           'footer_html', 'head_html', 'is_draft', 'meta_description', 'meta_keyworks',
                           'name', 'post_body', 'post_summary', 'publish_date', 'publish_immediately',
@@ -35,15 +32,32 @@ class COSBlogClient(BaseClient):
 
         data = {}
         for k in allowed_fields:
-            if locals().get(k) is not None:
-                data[k] = locals().get(k)
+            if kwargs.get(k) is not None:
+                data[k] = kwargs.get(k)
+        return data
+
+    def create_post(self, content_group_id, name, blog_author_id=None,
+                    campaign=None, campaign_name=None, footer_html=None, head_html=None,
+                    is_draft=None, meta_description=None, meta_keyworks=None,
+                    post_body=None, post_summary=None, publish_date=None,
+                    publish_immediately=None, slug=None, topic_ids=None, widgets=None, **options):
+
+        data = self._post_data(**locals())
         return self._call('blog-posts', data=json.dumps(data), method='POST',
                           content_type='application/json',**options)
 
     def get_posts(self, query={}, **options):
         return self._call('blog-posts', query=urlencode(query), **options)
 
-    # Update Blog Post
+    def update_post(self, blog_post_id, content_group_id=None, name=None, blog_author_id=None,
+                    campaign=None, campaign_name=None, footer_html=None, head_html=None,
+                    is_draft=None, meta_description=None, meta_keyworks=None,
+                    post_body=None, post_summary=None, publish_date=None,
+                    publish_immediately=None, slug=None, topic_ids=None, widgets=None, **options):
+        data = self._post_data(**locals())
+        return self._call('blog-posts/%s' % blog_post_id, data=json.dumps(data), method='PUT',
+                          content_type='application/json',**options)
+
     # Delete Blog Post
     # Get Blog Post by ID
     # Update Auto-Save Buffer

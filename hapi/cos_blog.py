@@ -94,7 +94,9 @@ class COSBlogClient(BaseClient):
         data = {'action': action}
         return self._call('blog-posts/%s/publish-action' % blog_post_id, data=json.dumps(data), method='POST', **options)
 
-    # Push Auto-Save Buffer to Live
+    def push_buffer_live(self, blog_post_id, **options):
+        return self._call('blog-posts/%s/push-buffer-live' % blog_post_id, method='POST', **options)
+
     def undelete_post(self, blog_post_id, **options):
         return self._call('blog-posts/%s/restore-deleted' % blog_post_id, method='POST', **options)
     # Validate Auto-Save Buffer Version

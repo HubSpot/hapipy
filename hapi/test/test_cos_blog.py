@@ -129,5 +129,11 @@ class BlogClientTest(unittest2.TestCase):
         with self.assertRaises(ValueError):
             self.client.publish_post(blog_post_id=348109414, action='invalid-action')
 
+    @attr('api')
+    def test_push_buffer_live(self):
+        post = self.client.push_buffer_live(blog_post_id=348109414)
+        pprint(post)
+        self.assertTrue(post)
+
 if __name__ == "__main__":
     unittest2.main()

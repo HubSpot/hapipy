@@ -1,10 +1,12 @@
+from __future__ import with_statement
 import unittest2
 import helper
 import logger
 from pprint import pprint
 import simplejson as json
-from hapi.cos_blog import COSBlogClient
 from nose.plugins.attrib import attr
+
+from hapi.cos_blog import COSBlogClient
 
 class BlogClientTest(unittest2.TestCase):
     """ 
@@ -112,6 +114,20 @@ class BlogClientTest(unittest2.TestCase):
         post = self.client.get_buffered_changes(blog_post_id=348109414)
         pprint(post)
         self.assertTrue(post)
+
+    @attr('api')
+    def test_publish_post(self):
+        post = self.client.publish_post(blog_post_id=348109414, action='schedule-publish')
+        pprint(post)
+        self.assertTrue(post)
+        post = self.client.publish_post(blog_post_id=348109414, action='push-buffer-live')
+        pprint(post)
+        self.assertTrue(post)
+        post = self.client.publish_post(blog_post_id=348109414, action='cancel-publish')
+        pprint(post)
+        self.assertTrue(post)
+        with self.assertRaises(ValueError):
+            self.client.publish_post(blog_post_id=348109414, action='invalid-action')
 
 if __name__ == "__main__":
     unittest2.main()

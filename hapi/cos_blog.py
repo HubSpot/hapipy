@@ -88,7 +88,12 @@ class COSBlogClient(BaseClient):
     def get_buffered_changes(self, blog_post_id, **options):
         return self._call('blog-posts/%s/has-buffered-changes' % blog_post_id, **options)
 
-    # Publish/Unpublish Blog Post
+    def publish_post(self, blog_post_id, action, **options):
+        if action not in ('push-buffer-live', 'schedule-publish', 'cancel-publish'):
+            raise ValueError('%s is not a valid action' % action)
+        data = {'action': action}
+        return self._call('blog-posts/%s/publish-action' % blog_post_id, data=json.dumps(data), method='POST', **options)
+
     # Push Auto-Save Buffer to Live
     def undelete_post(self, blog_post_id, **options):
         return self._call('blog-posts/%s/restore-deleted' % blog_post_id, method='POST', **options)

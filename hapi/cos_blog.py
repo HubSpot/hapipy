@@ -28,17 +28,20 @@ class COSBlogClient(BaseClient):
 
     # Blog Posts
     @staticmethod
-    def _post_data(**kwargs):
-        allowed_fields = ('blog_author_id', 'campaign', 'campaign_name', 'content_group_id',
-                          'footer_html', 'head_html', 'is_draft', 'meta_description', 'meta_keyworks',
-                          'name', 'post_body', 'post_summary', 'publish_date', 'publish_immediately',
-                          'slug', 'topic_ids', 'widgets')
-
+    def _args_to_dict(allowed_fields, **kwargs):
         data = {}
         for k in allowed_fields:
             if kwargs.get(k) is not None:
                 data[k] = kwargs.get(k)
         return data
+
+    @classmethod
+    def _post_data(cls, **kwargs):
+        allowed_fields = ('blog_author_id', 'campaign', 'campaign_name', 'content_group_id',
+                          'footer_html', 'head_html', 'is_draft', 'meta_description', 'meta_keyworks',
+                          'name', 'post_body', 'post_summary', 'publish_date', 'publish_immediately',
+                          'slug', 'topic_ids', 'widgets')
+        return cls._args_to_dict(allowed_fields, **kwargs)
 
     def create_post(self, content_group_id, name, blog_author_id=None,
                     campaign=None, campaign_name=None, footer_html=None, head_html=None,
@@ -134,13 +137,37 @@ class COSBlogClient(BaseClient):
 
 
     # Blog Authors
-    # ------------
-    # Create Author
-    # List Authors
-    # Update Author
-    # Delete Author
-    # Get Author
-    # Undelete Author
+    def create_author(self, email, full_name, user_id=None, username=None, **options):
+        '''https://developers.hubspot.com/docs/methods/blogv2/post_blog_authors'''
+        data = {
+            'email': email,
+            'full_name': full_name,
+            'user_id': user_id,
+            'username': username
+        }
+        return self._call('blog-authors', data=json.dumps(data), method='POST', content_type='application/json', **options)
+
+    def get_authors(self, query={}, **options):
+        '''https://developers.hubspot.com/docs/methods/blogv2/get_blog_authors'''
+        return self._call('blog-authors', query=urlencode(query), **options)
+
+    def update_author(self, author_id, email=None, full_name=None, user_id=None, username=None, **options):
+        '''https://developers.hubspot.com/docs/methods/blogv2/put_blog_authors_blog_author_id'''
+        data = cls._args_to_dict(('email', 'full_name', 'user_id', 'username'), **locals())
+        return self._call('blog-authors/%s' % author_id, data=json.dumps(data),
+                          method='PUT', content_type='application/json', **options)
+
+    def delete_author(self, author_id, **options):
+        '''https://developers.hubspot.com/docs/methods/blogv2/delete_blog_authors_blog_author_id'''
+        return self._call('blog-authors/%s' % author_id, method='DELETE', **options)
+
+    def get_author(self, author_id, **options):
+        '''https://developers.hubspot.com/docs/methods/blogv2/get_blog_authors_blog_author_id'''
+        return self._call('blog-authors/%s' % author_id, **options)
+
+    def undelete_author(self, author_id, **options):
+        '''https://developers.hubspot.com/docs/methods/blogv2/post_blog_authors_blog_author_id_restore_deleted'''
+        return self._call('blog-authors/%s/restore-deleted' % author_id, method='POST', **options)
 
     # Topics
     # ------

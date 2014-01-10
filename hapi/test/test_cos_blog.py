@@ -156,6 +156,31 @@ class BlogClientTest(unittest2.TestCase):
         pprint(response)
         self.assertTrue(response)
 
+    @attr('api')
+    def test_create_delete_author(self):
+        response = self.client.create_author(email='test@example.com', full_name="Another Test Author 3")
+        pprint(response)
+        self.assertTrue(response)
+
+        author_id = response['id']
+
+        response = self.client.delete_author(author_id=author_id)
+        pprint(response)
+        self.assertTrue(response)
+
+        authors = self.client.undelete_author(author_id=author_id)
+        pprint(authors)
+        self.assertTrue(authors)
+
+        response = self.client.delete_author(author_id=author_id)
+        pprint(response)
+        self.assertTrue(response)
+
+    @attr('api')
+    def test_get_authors(self):
+        authors = self.client.get_authors(query={'full_name': 'Hub Spot'})
+        pprint(authors)
+        self.assertTrue(authors)
 
 if __name__ == "__main__":
     unittest2.main()

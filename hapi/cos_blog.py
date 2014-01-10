@@ -102,9 +102,17 @@ class COSBlogClient(BaseClient):
 
     def validate_buffer(self, blog_post_id, **options):
         return self._call('blog-posts/%s/validate-buffer' % blog_post_id, method='POST', **options)
-    # List Previous Versions of Blog Post
-    # Get Previous Version of Blog Post
-    # Restore Previous Version of Blog Post
+
+    def get_post_versions(self, blog_post_id, **options):
+        return self._call('blog-posts/%s/versions' % blog_post_id, **options)
+
+    def get_post_version(self, blog_post_id, version_id, **options):
+        return self._call('blog-posts/%s/versions/%s' % (blog_post_id, version_id), **options)
+
+    def restore_post_version(self, blog_post_id, version_id, **options):
+        data = {'version_id': version_id}
+        return self._call('blog-posts/%s/versions/restore' % blog_post_id, data=json.dumps(data), method='POST', **options)
+
 
     # Blog Authors
     # ------------

@@ -141,5 +141,21 @@ class BlogClientTest(unittest2.TestCase):
         pprint(post)
         self.assertTrue(post)
 
+    @attr('api')
+    def test_get_post_versions(self):
+        response = self.client.get_post_versions(blog_post_id=348109414)
+        pprint(response)
+        self.assertTrue(response)
+
+        version_id = response[0]['version_id']
+        response = self.client.get_post_version(blog_post_id=348109414, version_id=version_id)
+        pprint(response)
+        self.assertTrue(response)
+
+        response = self.client.restore_post_version(blog_post_id=348109414, version_id=version_id)
+        pprint(response)
+        self.assertTrue(response)
+
+
 if __name__ == "__main__":
     unittest2.main()

@@ -64,7 +64,18 @@ class COSBlogClient(BaseClient):
     def get_post(self, blog_post_id, **options):
         return self._call('blog-posts/%s' % blog_post_id, **options)
 
-    # Update Auto-Save Buffer
+    def update_auto_save_buffer(self, blog_post_id, content_group_id=None, name=None, blog_author_id=None,
+                                campaign=None, campaign_name=None, footer_html=None, head_html=None,
+                                is_draft=None, meta_description=None, meta_keyworks=None,
+                                post_body=None, post_summary=None, publish_date=None,
+                                publish_immediately=None, slug=None, topic_ids=None, widgets=None, **options):
+        data = self._post_data(**locals())
+        return self._call('blog-posts/%s/buffer' % blog_post_id, data=json.dumps(data), method='PUT',
+                          content_type='application/json',**options)
+
+    def get_auto_save_buffer(self, blog_post_id, **options):
+        return self._call('blog-posts/%s/buffer' % blog_post_id, **options)
+
     # Get Auto-Save Buffer
     # Clone Blog Post
     # Has Auto-Save Buffered Changes

@@ -89,5 +89,17 @@ class BlogClientTest(unittest2.TestCase):
         pprint(post)
         self.assertTrue(post)
 
+    @attr('api')
+    def test_update_auto_save_buffer(self):
+        post = self.client.update_auto_save_buffer(blog_post_id=348109414, name="Updated Test Post Buffer")
+        pprint(post)
+        self.assertTrue(post)
+
+    @attr('api')
+    def test_get_auto_save_buffer(self):
+        post = self.client.get_auto_save_buffer(blog_post_id=348109414)
+        pprint(post)
+        self.assertTrue(post)
+
 if __name__ == "__main__":
     unittest2.main()

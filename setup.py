@@ -8,8 +8,7 @@ setup(
     long_description=open('README.md').read(),
     author='HubSpot Dev Team',
     author_email='devteam+hapi@hubspot.com',
-    url='https://github.com/HubSpot/hapipy',
-    download_url='https://github.com/HubSpot/hapipy/tarball/v2.10.3',
+    url='https://github.com/CurataEng/hapipy',
     license='LICENSE.txt',
     packages=['hapi', 'hapi.mixins'],
     install_requires=[

@@ -170,9 +170,11 @@ class COSBlogClient(BaseClient):
         return self._call('blog-authors/%s/restore-deleted' % author_id, method='POST', **options)
 
     # Topics
-    def create_topic(self, name, slug, **options):
+    def create_topic(self, name, slug=None, **options):
         '''https://developers.hubspot.com/docs/methods/blogv2/post_topics'''
-        data = {'name': name, 'slug': slug}
+        data = {'name': name}
+        if slug:
+            data['slug'] = slug
         return self._call('topics', data=json.dumps(data), method='POST', **options)
 
     def get_topics(self, query={}, **options):

@@ -206,7 +206,7 @@ class BlogClientTest(unittest2.TestCase):
     @attr('api')
     def test_create_update_delete_undelete_topic(self):
         name = "Test Topic " + datetime.now().strftime('%Y%m%d%H%M%S')
-        response = self.client.create_topic(name=name, slug='test-topic')
+        response = self.client.create_topic(name=name)
         pprint(response)
         self.assertTrue(response)
 

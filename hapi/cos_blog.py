@@ -38,14 +38,14 @@ class COSBlogClient(BaseClient):
     @classmethod
     def _post_data(cls, **kwargs):
         allowed_fields = ('blog_author_id', 'campaign', 'campaign_name', 'content_group_id',
-                          'footer_html', 'head_html', 'is_draft', 'meta_description', 'meta_keyworks',
+                          'footer_html', 'head_html', 'is_draft', 'meta_description', 'meta_keywords',
                           'name', 'post_body', 'post_summary', 'publish_date', 'publish_immediately',
                           'slug', 'topic_ids', 'widgets')
         return cls._args_to_dict(allowed_fields, **kwargs)
 
     def create_post(self, content_group_id, name, blog_author_id=None,
                     campaign=None, campaign_name=None, footer_html=None, head_html=None,
-                    is_draft=None, meta_description=None, meta_keyworks=None,
+                    is_draft=None, meta_description=None, meta_keywords=None,
                     post_body=None, post_summary=None, publish_date=None,
                     publish_immediately=None, slug=None, topic_ids=None, widgets=None, **options):
         '''https://developers.hubspot.com/docs/methods/blogv2/post_blog_posts'''
@@ -59,7 +59,7 @@ class COSBlogClient(BaseClient):
 
     def update_post(self, blog_post_id, content_group_id=None, name=None, blog_author_id=None,
                     campaign=None, campaign_name=None, footer_html=None, head_html=None,
-                    is_draft=None, meta_description=None, meta_keyworks=None,
+                    is_draft=None, meta_description=None, meta_keywords=None,
                     post_body=None, post_summary=None, publish_date=None,
                     publish_immediately=None, slug=None, topic_ids=None, widgets=None, **options):
         '''https://developers.hubspot.com/docs/methods/blogv2/put_blog_posts_blog_post_id'''
@@ -77,7 +77,7 @@ class COSBlogClient(BaseClient):
 
     def update_auto_save_buffer(self, blog_post_id, content_group_id=None, name=None, blog_author_id=None,
                                 campaign=None, campaign_name=None, footer_html=None, head_html=None,
-                                is_draft=None, meta_description=None, meta_keyworks=None,
+                                is_draft=None, meta_description=None, meta_keywords=None,
                                 post_body=None, post_summary=None, publish_date=None,
                                 publish_immediately=None, slug=None, topic_ids=None, widgets=None, **options):
         '''https://developers.hubspot.com/docs/methods/blogv2/put_blog_posts_blog_post_id_buffer'''
@@ -91,7 +91,7 @@ class COSBlogClient(BaseClient):
 
     def clone_post(self, blog_post_id, content_group_id=None, name=None, blog_author_id=None,
                    campaign=None, campaign_name=None, footer_html=None, head_html=None,
-                   is_draft=None, meta_description=None, meta_keyworks=None,
+                   is_draft=None, meta_description=None, meta_keywords=None,
                    post_body=None, post_summary=None, publish_date=None,
                    publish_immediately=None, slug=None, topic_ids=None, widgets=None, **options):
         '''https://developers.hubspot.com/docs/methods/blogv2/post_blog_posts_blog_post_id_clone'''

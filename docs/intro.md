@@ -24,14 +24,6 @@ If you're using use API keys, then just keep the file as is currently, replacing
 
 Please see http://developers.hubspot.com/docs/endpoints#leads-api for the main Blog API documentation.  Then read the [blog API client](https://github.com/HubSpot/hapipy/blob/master/hapi/leads.py) and [unit tests](https://github.com/HubSpot/hapipy/blob/master/hapi/test/test_leads.py) to see code examples.
 
-### hapipy Lead Nurturing Methods
-
-Please see http://developers.hubspot.com/docs/endpoints#nurture-api for the main Blog API documentation.  Then read the [blog API client](https://github.com/HubSpot/hapipy/blob/master/hapi/nurturing.py) and [unit tests](https://github.com/HubSpot/hapipy/blob/master/hapi/test/test_nurturing.py) to see code examples.
-
-### hapipy Blog Methods
-
-Please see http://developers.hubspot.com/docs/endpoints#blog-api for the main Blog API documentation.  Then read the [blog API client](https://github.com/HubSpot/hapipy/blob/master/hapi/blog.py) and [unit tests](https://github.com/HubSpot/hapipy/blob/master/hapi/test/test_blog.py) to see code examples.
-
 ### hapipy Prospects Methods
 
 Please see http://developers.hubspot.com/docs/endpoints#prospects-api for the main Prospects API documentation.  Then read the [prospects API client](https://github.com/HubSpot/hapipy/blob/master/hapi/prospects.py) and [unit tests](https://github.com/HubSpot/hapipy/blob/master/hapi/test/test_prospects.py) to see code examples.

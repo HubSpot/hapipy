@@ -55,8 +55,7 @@ class BaseClient(object):
     def _get_path(self, subpath):
         raise Exception("Unimplemented get_path for BaseClient subclass!")
 
-    def _prepare_request(self, subpath, params, data, opts, doseq=False, query=''):
-        params = params or {}
+    def _prepare_request_auth(self, subpath, params, data, opts):
         if self.api_key:
             params['hapikey'] = params.get('hapikey') or self.api_key
         else:
@@ -66,6 +65,10 @@ class BaseClient(object):
             if params.get('access_token') and not self.access_token:
                 self.access_token = params.get('access_token')
             params['access_token'] = self.access_token
+
+    def _prepare_request(self, subpath, params, data, opts, doseq=False, query=''):
+        params = params or {}
+        self._prepare_request_auth(subpath, params, data, opts)
 
         if opts.get('hub_id') or opts.get('portal_id'):
             params['portalId'] = opts.get('hub_id') or opts.get('portal_id')

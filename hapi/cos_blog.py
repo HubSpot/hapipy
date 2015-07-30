@@ -9,7 +9,8 @@ class COSBlogClient(BaseClient):
     # Blogs
     def _get_path(self, subpath):
         path_overrides = {
-            'blog-authors': '/blogs/v3/blog-authors'
+            'blog-authors': 'blogs/v3/blog-authors',
+            'topics': 'blogs/v3/topics'
         }
 
         if subpath in path_overrides:

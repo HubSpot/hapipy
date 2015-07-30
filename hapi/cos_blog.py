@@ -148,8 +148,8 @@ class COSBlogClient(BaseClient):
         '''https://developers.hubspot.com/docs/methods/blogv2/post_blog_authors'''
         data = {
             'email': email,
-            'full_name': full_name,
-            'user_id': user_id,
+            'fullName': full_name,
+            'userId': user_id,
             'username': username
         }
         return self._call('blog-authors', data=json.dumps(data), method='POST', content_type='application/json', **options)
@@ -160,7 +160,7 @@ class COSBlogClient(BaseClient):
 
     def update_author(self, author_id, email=None, full_name=None, user_id=None, username=None, **options):
         '''https://developers.hubspot.com/docs/methods/blogv2/put_blog_authors_blog_author_id'''
-        data = self._args_to_dict(('email', 'full_name', 'user_id', 'username'), **locals())
+        data = self._args_to_dict(('email', 'fullName', 'userId', 'username'), **locals())
         return self._call('blog-authors/%s' % author_id, data=json.dumps(data),
                           method='PUT', content_type='application/json', **options)
 

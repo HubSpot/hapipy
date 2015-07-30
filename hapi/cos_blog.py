@@ -5,9 +5,16 @@ from urllib import urlencode
 BLOG_API_VERSION = '2'
 
 class COSBlogClient(BaseClient):
-  
+
     # Blogs
     def _get_path(self, subpath):
+        path_overrides = {
+            'blog-authors': '/blogs/v3/blog-authors'
+        }
+
+        if subpath in path_overrides:
+            return path_overrides.get(subpath)
+
         return 'content/api/v%s/%s' % (BLOG_API_VERSION, subpath)
 
     def get_blogs(self, **options):

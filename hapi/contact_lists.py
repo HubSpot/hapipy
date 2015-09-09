@@ -23,5 +23,5 @@ class ContactListsClient(BaseClient):
 
     def add_contact_to_a_list(self, list_id, data=None, **options):
         data = data or {}
-        return self._call('lists/{list_id}/add'.format(list_id),
+        return self._call('lists/{list_id}/add'.format(list_id=list_id),
                           data=data, method='POST', **options)

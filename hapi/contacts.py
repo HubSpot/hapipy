@@ -20,5 +20,14 @@ class ContactsClient(BaseClient):
 
     def create_or_update_a_contact(self, email, data=None, **options):
         data = data or {}
-        return self._call('contact/createOrUpdate/email/{}'.format(email),
+        return self._call('contact/createOrUpdate/email/{email}'.format(email=email),
+                          data=data, method='POST', **options)
+
+    def get_contact_by_email(self, email, **options):
+        return self._call('contact/email/{email}/profile'.format(email=email),
+                          method='GET', **options)
+
+    def update_a_contact(self, contact_id, data=None, **options):
+        data = data or {}
+        return self._call('contact/vid/{contact_id}/profile'.format(contact_id=contact_id),
                           data=data, method='POST', **options)

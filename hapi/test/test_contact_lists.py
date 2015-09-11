@@ -10,7 +10,7 @@ from test_contacts import ContactsClientTestCase
 
 
 class ConstactListsClientTestCase(unittest2.TestCase):
-    
+
     """ Unit tests for the HubSpot Contact Lists API Python client.
 
     This file contains some unittest tests for the Contact Lists API.
@@ -34,10 +34,10 @@ class ConstactListsClientTestCase(unittest2.TestCase):
     		[self.client.delete_a_contact_list(list) for list in self.lists]
 
     @attr('api')
-    def test_get_a_contact_lists(self):
-    	""" Test that the get contact lists endpoint is valid. """
-    	response = self.client.get_a_contact_lists()
-    	self.assertTrue(len(response) > 0)
+    def test_get_contact_lists(self):
+        """ Test that the get contact lists endpoint is valid. """
+        response = self.client.get_contact_lists()
+        self.assertTrue(len(response) > 0)
 
     @attr('api')
     def test_add_contact_to_a_list(self):
@@ -69,4 +69,4 @@ class ConstactListsClientTestCase(unittest2.TestCase):
     												   dynamic=False)
 
     	response = self.client.delete_a_contact_list(contact_list['listId'])
-    	
+

@@ -18,7 +18,7 @@ class ContactListsClient(BaseClient):
     def _get_path(self, subpath):
         return 'contacts/v%s/%s' % (self.options.get('version') or CONTACT_LISTS_API_VERSION, subpath)
 
-    def get_a_contact_lists(self, **options):
+    def get_contact_lists(self, **options):
         """ Returns all of the contact lists """
         return self._call('lists', method='GET', **options)
 

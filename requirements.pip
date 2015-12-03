@@ -1,5 +1,5 @@
 # tested on python 2.6
 
-nose==1.1.2
+nose==1.2.1
 unittest2==0.5.1
 simplejson==2.2.1

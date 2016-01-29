@@ -140,6 +140,9 @@ class BaseClient(object):
 
         return data
 
+    def _prepare_request_retry(self, method, url, headers, data):
+        pass
+
     def _call_raw(self, subpath, params=None, method='GET', data=None, doseq=False, query='', retried=False, **options):
         opts = self.options.copy()
         opts.update(options)
@@ -195,6 +198,7 @@ class BaseClient(object):
                 # Don't retry errors from 300 to 499
                 if e.result and e.result.status >= 300 and e.result.status < 500:
                     raise
+                self._prepare_request_retry(method, url, headers, data)
                 self.log.warning('HapiError %s calling %s, retrying' % (e, url))
             # exponential back off - wait 0 seconds, 1 second, 3 seconds, 7 seconds, 15 seconds, etc.
             time.sleep((pow(2, try_count - 1) - 1) * self.sleep_multiplier)

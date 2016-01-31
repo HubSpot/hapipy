@@ -5,3 +5,4 @@
 dist
 /build
 MANIFEST
+.DS_Store

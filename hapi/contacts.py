@@ -16,17 +16,17 @@ class ContactsClient(BaseClient):
         self.log = logging_helper.get_log('hapi.contacts')
 
     def _get_path(self, subpath):
-        return 'contacts/v%s/%s' % (self.options.get('version') or CONTACTS_API_VERSION, subpath)
+        return u'contacts/v%s/%s' % (self.options.get('version') or CONTACTS_API_VERSION, subpath)
 
     def create_or_update_a_contact(self, email, data=None, **options):
         """ Creates or Updates a client with the supplied data. """
         data = data or {}
-        return self._call('contact/createOrUpdate/email/{email}'.format(email=email),
+        return self._call(u'contact/createOrUpdate/email/{email}'.format(email=email),
                           data=data, method='POST', **options)
 
     def get_contact_by_email(self, email, **options):
         """ Gets contact specified by email address. """
-        return self._call('contact/email/{email}/profile'.format(email=email),
+        return self._call(u'contact/email/{email}/profile'.format(email=email),
                           method='GET', **options)
 
     def update_a_contact(self, contact_id, data=None, **options):

@@ -22,6 +22,15 @@ class ContactListsClient(BaseClient):
         """ Returns all of the contact lists """
         return self._call('lists', method='GET', **options)
 
+    def get_contacts_by_list_id(self, list_id, query='', **options):
+        """ Get all contacts in the specified list """
+        return self._call(
+            'lists/{list_id}/contacts/all'.format(list_id=list_id),
+            method='GET',
+            query=query,
+            **options
+        )
+
     def add_contact_to_a_list(self, list_id, vids, data=None, **options):
         """ Adds a list of contact vids to the specified list. """
         data = data or {}

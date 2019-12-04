@@ -139,11 +139,13 @@ class BaseClient(object):
 
     def _digest_result(self, data):
         if data and isinstance(data, six.string_types):
+            # This is for python 2 version, data is str
             try:
                 data = json.loads(data)
             except ValueError:
                 pass
         else:
+            # This is for python 3 version, data is bytes string and get Gzipped
             try:
                 data = json.loads(gzip.GzipFile(fileobj=io.BytesIO(data)).read())
             except ValueError:

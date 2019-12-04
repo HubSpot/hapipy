@@ -1,7 +1,5 @@
-from builtins import str
 from builtins import object
-import six
-from builtins import str as str
+from future.utils import python_2_unicode_compatible
 
 
 class EmptyResult(object):
@@ -48,7 +46,6 @@ class HapiError(ValueError):
 {error}
         '''
 
-
     def __init__(self, result, request, err=None):
         super(HapiError,self).__init__(result and result.reason or "Unknown Reason")
         if result == None:
@@ -60,9 +57,9 @@ class HapiError(ValueError):
         self.request = request
         self.err = err
 
+    @python_2_unicode_compatible
     def __str__(self):
         return self.__unicode__()
-
 
     def __unicode__(self):
         params = {}
@@ -80,28 +77,41 @@ class HapiError(ValueError):
     def _dict_vals_to_unicode(self, data):
         unicode_data = {}
         for key, val in list(data.items()):
-            if not isinstance(val, six.string_types):
-                unicode_data[key] = str(val)
-            elif not isinstance(val, six.string_types):
-                unicode_data[key] = str(val, 'utf8', 'ignore')
-            else:
-                unicode_data[key] = val
-        return unicode_data
+            try:
+                # For python2
+                basestring
+                if not isinstance(val, basestring):
+                    unicode_data[key] = unicode(val)
+                elif not isinstance(val, unicode):
+                    unicode_data[key] = unicode(val, 'utf8', 'ignore')
+                else:
+                    unicode_data[key] = val
+            except NameError:
+                # For python3
+                if not isinstance(val, str):
+                    unicode_data[key] = str(val)
+                else:
+                    unicode_data[key] = val
 
+        return unicode_data
 
 
 # Create more specific error cases, to make filtering errors easier
 class HapiBadRequest(HapiError):
     '''Error wrapper for most 40X results and 501 results'''
 
+
 class HapiNotFound(HapiError):
     '''Error wrapper for 404 and 410 results'''
+
 
 class HapiTimeout(HapiError):
     '''Wrapper for socket timeouts, sslerror, and 504'''
 
+
 class HapiUnauthorized(HapiError):
     '''Wrapper for 401 Unauthorized errors'''
+
 
 class HapiServerError(HapiError):
     '''Wrapper for most 500 errors'''

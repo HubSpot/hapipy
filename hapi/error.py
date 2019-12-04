@@ -1,3 +1,9 @@
+from builtins import str
+from builtins import object
+import six
+from builtins import str as str
+
+
 class EmptyResult(object):
     '''
     Null Object pattern to prevent Null reference errors
@@ -9,7 +15,7 @@ class EmptyResult(object):
         self.msg = ''
         self.reason = ''
 
-    def __nonzero__(self):
+    def __bool__(self):
         return False
 
 
@@ -55,7 +61,7 @@ class HapiError(ValueError):
         self.err = err
 
     def __str__(self):
-        return self.__unicode__().encode('ascii', 'replace')
+        return self.__unicode__()
 
 
     def __unicode__(self):
@@ -73,11 +79,11 @@ class HapiError(ValueError):
 
     def _dict_vals_to_unicode(self, data):
         unicode_data = {}
-        for key, val in data.items():
-            if not isinstance(val, basestring):
-                unicode_data[key] = unicode(val)
-            elif not isinstance(val, unicode):
-                unicode_data[key] = unicode(val, 'utf8', 'ignore')
+        for key, val in list(data.items()):
+            if not isinstance(val, six.string_types):
+                unicode_data[key] = str(val)
+            elif not isinstance(val, six.string_types):
+                unicode_data[key] = str(val, 'utf8', 'ignore')
             else:
                 unicode_data[key] = val
         return unicode_data

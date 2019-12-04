@@ -1,6 +1,6 @@
 import os
 import json
-import logger
+from . import logger
 
 
 def get_options():
@@ -12,23 +12,23 @@ def get_options():
         try:
             raw_text = open(path).read()
         except IOError:
-            raise Exception, """
+            raise Exception("""
                 Unable to open '%s' for integration tests.\n
                 If this file exists, then you are indicating you want to override the standard 'demo' creds with your own.\n
-                However, it is currently inaccessible so that is a problem.""" % filename
+                However, it is currently inaccessible so that is a problem.""" % filename)
         try:
             options = json.loads(raw_text)
         except ValueError:
-            raise Exception, """
+            raise Exception("""
                 '%s' doesn't appear to be valid json!\n
                 If this file exists, then you are indicating you want to override the standard 'demo' creds with your own.\n
-                However, if I can't understand the json inside of it, then that is a problem.""" % filename
+                However, if I can't understand the json inside of it, then that is a problem.""" % filename)
 
         if not options.get('api_key') and not options.get('hapikey'):
-            raise Exception, """
+            raise Exception("""
                 '%s' seems to have no 'api_key' or 'access_token' specified!\n
                 If this file exists, then you are indicating you want to override the standard 'demo' creds with your own.\n
-                However, I'll need at least an API key to work with, or it definitely won't work.""" % filename
+                However, I'll need at least an API key to work with, or it definitely won't work.""" % filename)
         options['api_key'] = options.get('api_key') or options.get('hapikey')
 
     return options

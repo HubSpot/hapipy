@@ -1,12 +1,13 @@
+from builtins import str
 import unittest2
 import random
 
 from nose.plugins.attrib import attr
 
-import helper
+from . import helper
 from hapi.contact_lists import ContactListsClient
 from hapi.contacts import ContactsClient
-from test_contacts import ContactsClientTestCase
+from .test_contacts import ContactsClientTestCase
 
 
 class ContactsListsClientTestCase(unittest2.TestCase):

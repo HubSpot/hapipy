@@ -1,7 +1,9 @@
+from __future__ import print_function
+from builtins import object
 from collections import defaultdict
 import unittest2
 import simplejson as json
-from StringIO import StringIO
+from io import StringIO, BytesIO
 from gzip import GzipFile
 
 from hapi.base import BaseClient
@@ -15,7 +17,7 @@ class TestBaseClient(BaseClient):
 
 class TestResult(object):
     def __init__(self, *args, **kwargs):
-        for k, v in kwargs.items():
+        for k, v in list(kwargs.items()):
             setattr(self, k, v)
 
     def getheaders(self):
@@ -46,7 +48,7 @@ class BaseTest(unittest2.TestCase):
         # so duplicate=key&duplicate=value
         doseq = True
         url, headers, data = self.client._prepare_request(subpath, params, data, opts, doseq)
-        print url
+        print(url)
         self.assertTrue('duplicate=key&duplicate=' in url)
         
     def test_call(self):
@@ -68,8 +70,8 @@ class BaseTest(unittest2.TestCase):
 
         # This should fail once, and then succeed
         result = client._call(*args, **kwargs)
-        self.assertEquals(2, counter['count'])
-        self.assertEquals('SUCCESS', result)
+        self.assertEqual(2, counter['count'])
+        self.assertEqual('SUCCESS', result)
 
 
 
@@ -91,18 +93,18 @@ class BaseTest(unittest2.TestCase):
         """
         plain_text = "Hello Plain Text"
         data = self.client._process_body(plain_text, False)
-        self.assertEquals(plain_text, data)
+        self.assertEqual(plain_text, data)
 
         raw_json = '{"hello": "json"}'
         data = json.loads(self.client._process_body(raw_json, False))
         # Should parse as json into dict
-        self.assertEquals(data.get('hello'), 'json')
+        self.assertEqual(data.get('hello'), 'json')
 
         # Write our data into a gzipped stream
-        sio = StringIO()
+        sio = BytesIO()
         gzf = GzipFile(fileobj=sio, mode='wb')
-        gzf.write('{"hello": "gzipped"}')
+        gzf.write(b'{"hello": "gzipped"}')
         gzf.close()
 
         data = json.loads(self.client._process_body(sio.getvalue(), True))
-        self.assertEquals(data.get('hello'), 'gzipped')
+        self.assertEqual(data.get('hello'), 'gzipped')

@@ -1,4 +1,4 @@
-from builtins import object
+from builtins import object, str
 from future.utils import python_2_unicode_compatible
 
 
@@ -77,22 +77,12 @@ class HapiError(ValueError):
     def _dict_vals_to_unicode(self, data):
         unicode_data = {}
         for key, val in list(data.items()):
-            try:
-                # For python2
-                basestring
-                if not isinstance(val, basestring):
-                    unicode_data[key] = unicode(val)
-                elif not isinstance(val, unicode):
-                    unicode_data[key] = unicode(val, 'utf8', 'ignore')
-                else:
-                    unicode_data[key] = val
-            except NameError:
-                # For python3
-                if not isinstance(val, str):
-                    unicode_data[key] = str(val)
-                else:
-                    unicode_data[key] = val
-
+            if isinstance(val, str):
+                unicode_data[key] = val
+            elif isinstance(val, bytes):
+                unicode_data[key] = val.decode('utf-8', 'ignore')
+            else:
+                unicode_data[key] = str(val)
         return unicode_data
 
 

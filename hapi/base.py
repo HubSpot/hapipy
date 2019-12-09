@@ -100,10 +100,7 @@ class BaseClient(object):
         return params
 
     def _gunzip_body(self, body):
-        if body and isinstance(body, bytes):
-            sio = io.BytesIO(body)
-        else:
-            sio = io.StringIO(body)
+        sio = six.BytesIO(body)
         gf = gzip.GzipFile(fileobj=sio, mode="rb")
         return gf.read()
 

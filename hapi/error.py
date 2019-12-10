@@ -61,11 +61,7 @@ class HapiError(ValueError):
         self.request = request
         self.err = err
 
-
     def __str__(self):
-        return self.__unicode_string__()
-
-    def __unicode_string__(self):
         params = {}
         request_keys = ('method', 'host', 'url', 'data', 'headers', 'timeout', 'body')
         result_attrs = ('status', 'reason', 'msg', 'body', 'headers')

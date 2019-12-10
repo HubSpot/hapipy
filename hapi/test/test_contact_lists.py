@@ -1,4 +1,3 @@
-from builtins import str
 import unittest2
 import random
 

@@ -1,5 +1,4 @@
-
-from builtins import str
+from builtins import str as unicode
 from builtins import object
 
 import unittest2
@@ -26,12 +25,12 @@ class ErrorTest(unittest2.TestCase):
     def test_unicode_error(self):
 
         result = MockResult()
-        result.body = 'A HapiException with unicode \\u8131 \xe2\x80\xa2\t'
+        result.body = u'A HapiException with unicode \u8131 \xe2\x80\xa2\t'
         result.reason = 'Why must everything have a reason?'
         request = {}
         for key in ('method', 'host', 'url', 'timeout', 'data', 'headers'):
             request[key] = ''
-        request['url'] = 'http://adomain/with-unicode-\\u8131'
+        request['url'] = u'http://adomain/with-unicode-\u8131'
         # Note the following line is missing the 'u' modifier on the string,
         # this is intentional to simulate poorly formatted input that should
         # still be handled without an exception
@@ -39,9 +38,9 @@ class ErrorTest(unittest2.TestCase):
         request['headers'] = {'Cookie': "with unicode \\u8131 \xe2\x80\xa2"}
 
         exc = HapiError(result, request)
-        ok_(request['url'] in str(exc))
+        ok_(request['url'] in unicode(exc))
         ok_(result.reason in str(exc))
 
     def test_error_with_no_result_or_request(self):
         exc = HapiError(None, None, 'a silly error')
-        ok_('a silly error' in str(exc))
+        ok_('a silly error' in unicode(exc))

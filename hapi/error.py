@@ -1,4 +1,5 @@
-from builtins import object, str
+from builtins import object
+from builtins import str as unicode
 from future.utils import python_2_unicode_compatible
 
 
@@ -19,6 +20,7 @@ class EmptyResult(object):
     __nonzero__ = __bool__
 
 
+@python_2_unicode_compatible
 class HapiError(ValueError):
     """Any problems get thrown as HapiError exceptions with the relevant info inside"""
 
@@ -59,11 +61,11 @@ class HapiError(ValueError):
         self.request = request
         self.err = err
 
-    @python_2_unicode_compatible
-    def __str__(self):
-        return self.__unicode__()
 
-    def __unicode__(self):
+    def __str__(self):
+        return self.__unicode_string__()
+
+    def __unicode_string__(self):
         params = {}
         request_keys = ('method', 'host', 'url', 'data', 'headers', 'timeout', 'body')
         result_attrs = ('status', 'reason', 'msg', 'body', 'headers')
@@ -79,12 +81,12 @@ class HapiError(ValueError):
     def _dict_vals_to_unicode(self, data):
         unicode_data = {}
         for key, val in list(data.items()):
-            if isinstance(val, str):
+            if isinstance(val, unicode):
                 unicode_data[key] = val
             elif isinstance(val, bytes):
-                unicode_data[key] = val.decode('utf-8', 'ignore')
+                unicode_data[key] = unicode(val, 'utf8', 'ignore')
             else:
-                unicode_data[key] = str(val)
+                unicode_data[key] = unicode(val)
         return unicode_data
 
 

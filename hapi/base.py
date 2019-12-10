@@ -1,6 +1,6 @@
 from __future__ import print_function
 from builtins import object
-import six
+from past.builtins import basestring
 from future.moves.urllib.parse import urlencode
 import http.client
 import simplejson as json
@@ -87,7 +87,7 @@ class BaseClient(object):
             'Accept-Encoding': 'gzip',
             'Content-Type': opts.get('content_type') or 'application/json'})
 
-        if data and not isinstance(data, six.string_types) and headers['Content-Type']=='application/json':
+        if data and not isinstance(data, basestring) and headers['Content-Type']=='application/json':
             data = json.dumps(data)
 
         return url, headers, data
@@ -100,7 +100,10 @@ class BaseClient(object):
         return params
 
     def _gunzip_body(self, body):
-        sio = six.BytesIO(body)
+        if isinstance(body, bytes):
+            sio = io.BytesIO(body)
+        else:
+            sio = io.StringIO(body)
         gf = gzip.GzipFile(fileobj=sio, mode="rb")
         return gf.read()
 
@@ -115,7 +118,7 @@ class BaseClient(object):
         except:
             raise HapiTimeout(None, request, traceback.format_exc())
 
-        encoding = [i[1] for i in result.getheaders() if i[0] == 'content-encoding']
+        encoding = [i[1] for i in result.getheaders() if i[0].lower() == 'content-encoding']
         result.body = self._process_body(result.read(), len(encoding) and encoding[0] == 'gzip')
 
         conn.close()
@@ -135,16 +138,9 @@ class BaseClient(object):
         return result.body
 
     def _digest_result(self, data):
-        if data and isinstance(data, six.string_types):
-            # This is for python 2 version, data is str
+        if data and isinstance(data, basestring):
             try:
                 data = json.loads(data)
-            except ValueError:
-                pass
-        else:
-            # This is for python 3 version, data is bytes string and get Gzipped
-            try:
-                data = json.loads(gzip.GzipFile(fileobj=io.BytesIO(data)).read())
             except ValueError:
                 pass
         return data

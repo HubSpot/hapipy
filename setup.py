@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='hapipy',
-    version='2.10.5.4',
+    version='2.10.5.4-bs1',
     description="A python wrapper around HubSpot's APIs",
     long_description=open('README.md').read(),
     author='HubSpot Dev Team',
@@ -13,6 +13,8 @@ setup(
     license='LICENSE.txt',
     packages=['hapi', 'hapi.mixins'],
     install_requires=[
-        'simplejson>=2.1.2'
+        'simplejson>=2.1.2',
+        'six>=1.12.0',
+        'future>=0.18.2'
     ],
 )

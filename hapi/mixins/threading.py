@@ -6,7 +6,10 @@ For windows machines, pre-compiled PyCURL binaries can be downloaded
 [here for python 2.5](http://www.lfd.uci.edu/~gohlke/pythonlibs/#pycurl).
 '''
 
-import pycurl, cStringIO
+from builtins import object
+import pycurl
+import six
+
 
 class HapiThreadedError(ValueError):
     def __init__(self, curl):
@@ -74,8 +77,8 @@ class PyCurlMixin(object):
         c.data = data
 
         c.status = -1
-        c.body = cStringIO.StringIO()
-        c.response_headers = cStringIO.StringIO()
+        c.body = six.BytesIO()
+        c.response_headers = six.BytesIO()
 
         c.setopt(c.URL, c.full_url)
         c.setopt(c.TIMEOUT, self.options['timeout'])
@@ -83,10 +86,10 @@ class PyCurlMixin(object):
         c.setopt(c.HEADERFUNCTION, c.response_headers.write)
 
         if headers:
-            c.setopt(c.HTTPHEADER, [ "%s: %s" % (x, y) for x, y in headers.items() ])
+            c.setopt(c.HTTPHEADER, [ "%s: %s" % (x, y) for x, y in list(headers.items()) ])
 
         if data:
-            c.data_out = cStringIO.StringIO(data)
+            c.data_out = six.BytesIO(data)
             c.setopt(c.READFUNCTION, c.data_out.getvalue)
 
         return c
@@ -120,7 +123,7 @@ class PyCurlMixin(object):
         for c in m.handles:
             c.status = c.getinfo(c.HTTP_CODE)
             if 'Content-Encoding: gzip' in c.response_headers.getvalue():
-                c.body = cStringIO.StringIO(self._gunzip_body(c.body.getvalue()))
+                c.body = six.BytesIO(self._gunzip_body(c.body.getvalue()))
             result = { "data" : self._digest_result(c.body.getvalue()), "code": c.status }
             if not c.status or c.status >= 400:
                 # Don't throw the exception because some might have succeeded

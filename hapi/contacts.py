@@ -1,6 +1,6 @@
-from base import BaseClient
-import logging_helper
-from urllib import quote
+from .base import BaseClient
+from . import logging_helper
+from future.moves.urllib.parse import quote
 
 
 CONTACTS_API_VERSION = '1'

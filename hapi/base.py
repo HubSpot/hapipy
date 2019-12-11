@@ -1,15 +1,18 @@
-import urllib
-import httplib
+from __future__ import print_function
+from builtins import object
+from past.builtins import basestring
+from future.moves.urllib.parse import urlencode
+import http.client
 import simplejson as json
-import utils
+from . import utils
 import logging
 import sys
 import time
 import traceback
 import gzip
-import StringIO
+import six
 
-from error import HapiError, HapiBadRequest, HapiNotFound, HapiTimeout, HapiServerError, HapiUnauthorized
+from .error import HapiError, HapiBadRequest, HapiNotFound, HapiTimeout, HapiServerError, HapiUnauthorized
 
 
 _PYTHON25 = sys.version_info < (2, 6)
@@ -45,7 +48,7 @@ class BaseClient(object):
         self._prepare_connection_type()
 
     def _prepare_connection_type(self):
-        connection_types = {'http': httplib.HTTPConnection, 'https': httplib.HTTPSConnection}
+        connection_types = {'http': http.client.HTTPConnection, 'https': http.client.HTTPSConnection}
         parts = self.options['api_base'].split('://')
         protocol = (parts[0:-1]+['https'])[0]
         self.options['connection_type'] = connection_types[protocol]
@@ -78,7 +81,7 @@ class BaseClient(object):
             query = query[1:]
         if query and not query.startswith('&'):
             query = '&' + query
-        url = opts.get('url') or '/%s?%s%s' % (self._get_path(subpath), urllib.urlencode(params, doseq), query)
+        url = opts.get('url') or '/%s?%s%s' % (self._get_path(subpath), urlencode(params, doseq), query)
         headers = opts.get('headers') or {}
         headers.update({
             'Accept-Encoding': 'gzip',
@@ -97,7 +100,7 @@ class BaseClient(object):
         return params
 
     def _gunzip_body(self, body):
-        sio = StringIO.StringIO(body)
+        sio = six.BytesIO(body)
         gf = gzip.GzipFile(fileobj=sio, mode="rb")
         return gf.read()
 
@@ -112,7 +115,7 @@ class BaseClient(object):
         except:
             raise HapiTimeout(None, request, traceback.format_exc())
 
-        encoding = [i[1] for i in result.getheaders() if i[0] == 'content-encoding']
+        encoding = [i[1] for i in result.getheaders() if i[0].lower() == 'content-encoding']
         result.body = self._process_body(result.read(), len(encoding) and encoding[0] == 'gzip')
 
         conn.close()
@@ -137,7 +140,6 @@ class BaseClient(object):
                 data = json.loads(data)
             except ValueError:
                 pass
-
         return data
 
     def _call_raw(self, subpath, params=None, method='GET', data=None, doseq=False, query='', retried=False, **options):
@@ -167,7 +169,7 @@ class BaseClient(object):
                 request_info = self._create_request(connection, method, url, headers, data)
                 result = self._execute_request_raw(connection, request_info)
                 break
-            except HapiUnauthorized, e:
+            except HapiUnauthorized as e:
                 self.log.warning("401 Unauthorized response to API request.")
                 if self.access_token and self.refresh_token and self.client_id and not retried:
                     self.log.info("Refreshing access token")
@@ -176,7 +178,7 @@ class BaseClient(object):
                         decoded = json.loads(token_response)
                         self.access_token = decoded['access_token']
                         self.log.info('Retrying with new token %' % (self.access_token))
-                    except Exception, e:
+                    except Exception as e:
                         self.log.error("Unable to refresh access_token: %s" % (e))
                         raise
                     return self._call_raw(subpath, params=params, method=method, data=data, doseq=doseq, query=query, retried=True, **options)
@@ -188,7 +190,7 @@ class BaseClient(object):
                     elif self.access_token and not self.client_id:
                         self.log.error("In order to enable automated refreshing of your access token, please provide a client_id in addition to a refresh token.")
                     raise
-            except HapiError, e:
+            except HapiError as e:
                 if try_count > num_retries:
                     logging.warning("Too many retries for %s", url)
                     raise

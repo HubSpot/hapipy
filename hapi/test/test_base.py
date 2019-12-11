@@ -3,7 +3,7 @@ from builtins import object
 from collections import defaultdict
 import unittest2
 import simplejson as json
-from io import StringIO, BytesIO
+import six
 from gzip import GzipFile
 
 from hapi.base import BaseClient
@@ -101,7 +101,7 @@ class BaseTest(unittest2.TestCase):
         self.assertEqual(data.get('hello'), 'json')
 
         # Write our data into a gzipped stream
-        sio = BytesIO()
+        sio = six.BytesIO()
         gzf = GzipFile(fileobj=sio, mode='wb')
         gzf.write(b'{"hello": "gzipped"}')
         gzf.close()

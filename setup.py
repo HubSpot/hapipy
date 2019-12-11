@@ -14,6 +14,7 @@ setup(
     packages=['hapi', 'hapi.mixins'],
     install_requires=[
         'simplejson>=2.1.2',
+        'six>=1.12.0',
         'future>=0.18.2'
     ],
 )

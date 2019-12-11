@@ -10,7 +10,7 @@ import sys
 import time
 import traceback
 import gzip
-import io
+import six
 
 from .error import HapiError, HapiBadRequest, HapiNotFound, HapiTimeout, HapiServerError, HapiUnauthorized
 
@@ -100,10 +100,7 @@ class BaseClient(object):
         return params
 
     def _gunzip_body(self, body):
-        if isinstance(body, bytes):
-            sio = io.BytesIO(body)
-        else:
-            sio = io.StringIO(body)
+        sio = six.BytesIO(body)
         gf = gzip.GzipFile(fileobj=sio, mode="rb")
         return gf.read()
 

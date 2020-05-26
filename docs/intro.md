@@ -27,7 +27,3 @@ Please see http://developers.hubspot.com/docs/endpoints#leads-api for the main B
 ### hapipy Prospects Methods
 
 Please see http://developers.hubspot.com/docs/endpoints#prospects-api for the main Prospects API documentation.  Then read the [prospects API client](https://github.com/HubSpot/hapipy/blob/master/hapi/prospects.py) and [unit tests](https://github.com/HubSpot/hapipy/blob/master/hapi/test/test_prospects.py) to see code examples.
-
-### hapipy Settings Methods
-
-Please see http://developers.hubspot.com/docs/endpoints#settings-api for the main Settings API documentation.  Then read the [prospects API client](https://github.com/HubSpot/hapipy/blob/master/hapi/settings.py) and [unit tests](https://github.com/HubSpot/hapipy/blob/master/hapi/test/test_settings.py) to see code examples.

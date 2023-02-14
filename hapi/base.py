@@ -59,6 +59,7 @@ class BaseClient(object):
         raise Exception("Unimplemented get_path for BaseClient subclass!")
 
     def _prepare_request_auth(self, subpath, params, data, opts):
+        headers = opts.get('headers', {}) if opts else {}
         if self.api_key:
             params['hapikey'] = params.get('hapikey') or self.api_key
         else:
@@ -67,11 +68,12 @@ class BaseClient(object):
             # but one was provided as part of the method invocation, we persist it
             if params.get('access_token') and not self.access_token:
                 self.access_token = params.get('access_token')
-            params['access_token'] = self.access_token
+            headers.update({"Authorization": "Bearer %s" % self.access_token})
+        return headers
 
     def _prepare_request(self, subpath, params, data, opts, doseq=False, query=''):
         params = params or {}
-        self._prepare_request_auth(subpath, params, data, opts)
+        headers = self._prepare_request_auth(subpath, params, data, opts)
 
         if opts.get('hub_id') or opts.get('portal_id'):
             params['portalId'] = opts.get('hub_id') or opts.get('portal_id')
@@ -82,7 +84,6 @@ class BaseClient(object):
         if query and not query.startswith('&'):
             query = '&' + query
         url = opts.get('url') or '/%s?%s%s' % (self._get_path(subpath), urlencode(params, doseq), query)
-        headers = opts.get('headers') or {}
         headers.update({
             'Accept-Encoding': 'gzip',
             'Content-Type': opts.get('content_type') or 'application/json'})

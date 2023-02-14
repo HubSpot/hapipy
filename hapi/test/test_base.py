@@ -27,7 +27,7 @@ class TestResult(object):
 class BaseTest(unittest2.TestCase):
 
     def setUp(self):
-        self.client = TestBaseClient('unit_api_key')
+        self.client = TestBaseClient(access_token='client_access_token')
 
     def tearDown(self):
         pass
@@ -43,18 +43,19 @@ class BaseTest(unittest2.TestCase):
         # so duplicate=[key,value]
         url, headers, data = self.client._prepare_request(subpath, params, data, opts, doseq)
         self.assertTrue('duplicate=%5B%27key%27%2C+%27value%27%5D' in url)
+        self.assertEqual(headers['Authorization'], 'Bearer client_access_token')
 
         # with doseq=True the values will be split and assigned their own key
         # so duplicate=key&duplicate=value
         doseq = True
         url, headers, data = self.client._prepare_request(subpath, params, data, opts, doseq)
-        print(url)
         self.assertTrue('duplicate=key&duplicate=' in url)
-        
+        self.assertEqual(headers['Authorization'], 'Bearer client_access_token')
+
     def test_call(self):
         client = TestBaseClient('key', api_base='base', env='hudson')
         client.sleep_multiplier = .02
-        client._create_request = lambda *args:None
+        client._create_request = lambda *args: None
 
         counter = dict(count=0)
         args = ('/my-api-path', {'bebop': 'rocksteady'})
@@ -63,9 +64,10 @@ class BaseTest(unittest2.TestCase):
         def execute_request_with_retries(a, b):
             counter['count'] += 1
             if counter['count'] < 2:
-                raise HapiError(defaultdict(str), defaultdict(str)) 
+                raise HapiError(defaultdict(str), defaultdict(str))
             else:
                 return TestResult(body='SUCCESS')
+
         client._execute_request_raw = execute_request_with_retries
 
         # This should fail once, and then succeed
@@ -73,12 +75,11 @@ class BaseTest(unittest2.TestCase):
         self.assertEqual(2, counter['count'])
         self.assertEqual('SUCCESS', result)
 
-
-
         def execute_request_failed(a, b):
-            raise HapiError(defaultdict(str), defaultdict(str)) 
+            raise HapiError(defaultdict(str), defaultdict(str))
 
-        # This should fail and retry and still fail
+            # This should fail and retry and still fail
+
         client._execute_request_raw = execute_request_failed
         raised_error = False
         try:

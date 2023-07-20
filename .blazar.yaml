@@ -2,7 +2,4 @@ env:
  HS_SETTINGS_CLASS: HudsonCoreLibs
 
 buildpack:
-  host: git.hubteam.com
-  organization: HubSpotProtected
-  repository: Blazar-Buildpack-Python
-  branch: master
+  name: Blazar-Buildpack-Python
